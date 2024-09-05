@@ -15,13 +15,13 @@
 \frame{\tableofcontents[currentsection]}
 
 \begin{frame}{Motivation}
-        \begin{itemize}
-            \item Pointer analysis
-            \item \emph{Weakly} relational: relations between pairs of pointer expressions, e.g.,
-            \[
-            \&x = 4 + \&y
-            \]
-        \end{itemize}
+    \begin{itemize}
+        \item Pointer analysis
+        \item \emph{Weakly} relational: relations between pairs of pointer expressions, e.g.,
+              \[
+                  \&x = 4 + \&y
+              \]
+    \end{itemize}
 \end{frame}
 
 \begin{frame}[containsverbatim]{Example}
@@ -29,34 +29,34 @@
     %-> running example)
     \begin{minipage}{0.49\textwidth}
 
-    \begin{tikzpicture}
+        \begin{tikzpicture}
 
-    % Settings
-    \def\blockheight{0.8}
-    \def\blockwidth{3.5}
+            % Settings
+            \def\blockheight{0.8}
+            \def\blockwidth{3.5}
 
-    % Memory blocks and addresses
-    \foreach \i/\label in {0/malloc1, 1/free1, 2/malloc2, 3/free2, 4/malloc3, 5/free3, 6/malloc4, 7/free4} {
-        % Draw memory block
-        \draw (0, -\i*\blockheight) rectangle (\blockwidth, -\i*\blockheight - \blockheight);
-        % Label the memory block
-        \node at (\blockwidth/2, -\i*\blockheight - \blockheight/2) {\label};
-        % Print address to the right
-        \node[above right=0.1cm and 0cm] at (\blockwidth, -\i*\blockheight - \blockheight/2) {\texttt{\the\numexpr 4*\i \relax}};
-    }
-    \end{tikzpicture}
-\end{minipage}
-\begin{minipage}{0.49\textwidth}
+            % Memory blocks and addresses
+            \foreach \i/\label in {0/malloc1, 1/free1, 2/malloc2, 3/free2, 4/malloc3, 5/free3, 6/malloc4, 7/free4} {
+                    % Draw memory block
+                    \draw (0, -\i*\blockheight) rectangle (\blockwidth, -\i*\blockheight - \blockheight);
+                    % Label the memory block
+                    \node at (\blockwidth/2, -\i*\blockheight - \blockheight/2) {\label};
+                    % Print address to the right
+                    \node[above right=0.1cm and 0cm] at (\blockwidth, -\i*\blockheight - \blockheight/2) {\texttt{\the\numexpr 4*\i \relax}};
+                }
+        \end{tikzpicture}
+    \end{minipage}
+    \begin{minipage}{0.49\textwidth}
 
-\begin{minted}{C}
+        \begin{minted}{C}
 ...
 (*malloc)(p);
 ...
 (*free)(p);
 ...
 \end{minted}
-$\rightarrow$ $free = 4 + malloc$?
-\end{minipage}
+        $\rightarrow$ $free = 4 + malloc$?
+    \end{minipage}
 \end{frame}
 
 \begin{frame}{Why are disequalities important}
@@ -70,82 +70,82 @@ $\rightarrow$ $free = 4 + malloc$?
 \begin{frame}{Abstract Domain}
     \begin{itemize}
         \item Set of terms $\T$
-        $\{A, *A, \&x, x, \&y, y, *(1+y)\}$
+              $\{A, *A, \&x, x, \&y, y, *(1+y)\}$
         \item Conjunction of equalities and disequalities:
-        \begin{itemize}
-        \item Quantitative equalities
-        \[
-         (A = 1 + y) \land (\&x = \&y)
-        \]
-        \item Quantitative disequalities
-        \[
-            (x \neq 4 - y)
-        \]
-        \item Block disequalities
-        \[
-            (bl(y) \neq bl(A))
-        \]
-        \end{itemize}
+              \begin{itemize}
+                  \item Quantitative equalities
+                        \[
+                            (A = 1 + y) \land (\&x = \&y)
+                        \]
+                  \item Quantitative disequalities
+                        \[
+                            (x \neq 4 - y)
+                        \]
+                  \item Block disequalities
+                        \[
+                            (bl(y) \neq bl(A))
+                        \]
+              \end{itemize}
     \end{itemize}
 \end{frame}
 
 \begin{frame}{Quantitative Finite Automaton (QFA)}
     \todo[inline]{How to add equalities?}
     \[
-            \T=\{A, *(1 + A), \&x, x, \&y, y, *y\}
-\]
-\[
-    (y = 1 + A) \land (\&x = \&y)
-\]
-\centering
-\begin{tikzpicture}[shorten >=1pt, node distance=5cm, on grid, auto, state/.style={rectangle, rounded corners, draw, inner sep=5pt, align=center}]
+        \T=\{A, *(1 + A), \&x, x, \&y, y, *y\}
+    \]
+    \[
+        (y = 1 + A) \land (\&x = \&y)
+    \]
+    \centering
+    \begin{tikzpicture}[shorten >=1pt, node distance=5cm, on grid, auto, state/.style={rectangle, rounded corners, draw, inner sep=5pt, align=center}]
 
-    \node[state] (y) {$\&x =\&y$};
+        \node[state] (y) {$\&x =\&y$};
 
-    \node[state, right=3.5cm of y] (AB) {$\begin{array}{c}
-        x = y = \\
-        1 + A
-        \end{array}$};
+        \node[state, right=3.5cm of y] (AB) {$\begin{array}{c}
+                    x = y = \\
+                    1 + A
+                \end{array}$};
 
-    \node[state, right=4cm of AB] (ABs) {$\begin{array}{c}
-          *(1+A) = *y
-        \end{array}$};
+        \node[state, right=4cm of AB] (ABs) {$\begin{array}{c}
+                    *(1+A) = *y
+                \end{array}$};
 
-    \path[->]
-    (y) edge[] (AB)
-    (AB) edge[] (ABs);
+        \path[->]
+        (y) edge[] (AB)
+        (AB) edge[] (ABs);
 
 
-  \end{tikzpicture}
+    \end{tikzpicture}
 \end{frame}
 
-  \begin{frame}{QFA: Insert Terms}
+\begin{frame}{QFA: Insert Terms}
     \[
-            \T=\{A, *(1 + A), \&x, x, \&y, y, *y, \textcolor{TUMAccentOrange}{*x}\}
-\]
-\[
-    (y = 1 + A) \land (\&x = \&y)
-\]
-\centering
-\begin{tikzpicture}[shorten >=1pt, node distance=5cm, on grid, auto, state/.style={rectangle, rounded corners, draw, inner sep=5pt, align=center}]
+        \T=\{A, *(1 + A), \&x, x, \&y, y, *y, \textcolor{TUMAccentOrange}{*x}\}
+    \]
+    \[
+        (y = 1 + A) \land (\&x = \&y)
+    \]
+    \centering
+    \begin{tikzpicture}[shorten >=1pt, node distance=5cm, on grid, auto, state/.style={rectangle, rounded corners, draw, inner sep=5pt, align=center}]
 
-    \node[state] (y) {$\&x =\&y$};
+        \node[state] (y) {$\&x =\&y$};
 
-    \node[state, right=3.5cm of y] (AB) {$\begin{array}{c}
-        x = y = \\
-        1 + A
-        \end{array}$};
+        \node[state, right=3.5cm of y] (AB) {$\begin{array}{c}
+                    x = y = \\
+                    1 + A
+                \end{array}$};
 
-    \node[state, right=4cm of AB] (ABs) {$\begin{array}{c}
-          *(1+A) = *y \textcolor{TUMAccentOrange}{\,= *x}
-        \end{array}$};
+        \node[state, right=4cm of AB] (ABs) {$\begin{array}{c}
+                    *(1+A) = *y \textcolor{TUMAccentOrange}{\,= *x}
+                \end{array}$};
 
-    \path[->]
-    (y) edge[] (AB)
-    (AB) edge[] (ABs);
+        \path[->]
+        (y) edge[] (AB)
+        (AB) edge[] (ABs);
 
 
-  \end{tikzpicture}
+    \end{tikzpicture}
 
 
 \end{frame}
@@ -156,20 +156,20 @@ $\rightarrow$ $free = 4 + malloc$?
 
 \begin{frame}[containsverbatim]{Block Disequalities}
     \begin{itemize}
-\item Two terms do not belong to the same C block
+        \item Two terms do not belong to the same C block
         \item For all variables $x$ and $y$:
-        \[
-        bl(\&x) \neq bl(\&y)
-    \]
-\item
-\begin{minted}{C}
+              \[
+                  bl(\&x) \neq bl(\&y)
+              \]
+        \item
+              \begin{minted}{C}
 int *x = malloc();
 int *y = malloc();
 \end{minted}
 
-    \[
-    bl(x) \neq bl(y)
-    \]
+              \[
+                  bl(x) \neq bl(y)
+              \]
 
     \end{itemize}
 \end{frame}
@@ -177,21 +177,21 @@ int *y = malloc();
 \begin{frame}[containsverbatim]{Quantitative Disequalities}
     \begin{itemize}
         \item Deriving from block disequalities: If $bl(t_1) \neq bl(t_2)$
-     \[
-     t_1\neq z+ t_2 \quad\quad \text{for each $z \in \Z$}
-     \]
+              \[
+                  t_1\neq z+ t_2 \quad\quad \text{for each $z \in \Z$}
+              \]
         \item Deriving from equalities: If $t_1 = z + t_2$,
-        \[
-        t_1\neq z' + t_2 \quad\quad \text{for each $z' \neq z$}
-        \]
+              \[
+                  t_1\neq z' + t_2 \quad\quad \text{for each $z' \neq z$}
+              \]
 
-\item Deriving from guards:
-\begin{minted}{C}
+        \item Deriving from guards:
+              \begin{minted}{C}
 if(*x != 4 + y){...}
 \end{minted}
-\item Deriving from other disequalities: If $*(z_1 + t_1) \neq *(z_2 + t_2)$,
- \[ t_1 \neq (z_2 - z_1) + t_2
-\]
+        \item Deriving from other disequalities: If $*(z_1 + t_1) \neq *(z_2 + t_2)$,
+              \[ t_1 \neq (z_2 - z_1) + t_2
+              \]
     \end{itemize}
 \end{frame}
 
@@ -206,28 +206,28 @@ if(*x != 4 + y){...}
 \begin{frame}{Meet}
     \begin{itemize}
 
-    \item Equivalent to conjunction $\land$
-    \item Update parition and QFA
-    \item Add block/quantitative disequalities
-    \item Closure of disequalities
+        \item Equivalent to conjunction $\land$
+        \item Update parition and QFA
+        \item Add block/quantitative disequalities
+        \item Closure of disequalities
 
-\end{itemize}
+    \end{itemize}
 \end{frame}
 
 \begin{frame}{Join}
     \[
-    \T = \{
+        \T = \{
         \&x,x,*x, {*}{*}x
-    \}
+        \}
     \]
     \begin{minipage}{0.4\textwidth}
-    \centering
-    \begin{tikzpicture}[shorten >=1pt, node distance=3cm, on grid, auto, state/.style={rectangle, rounded corners, draw, inner sep=5pt, align=center}]
+        \centering
+        \begin{tikzpicture}[shorten >=1pt, node distance=3cm, on grid, auto, state/.style={rectangle, rounded corners, draw, inner sep=5pt, align=center}]
 
-          \node[state, initial text={}] (Q1) {$\&x= *x$};
-          \node[state, right=of Q1] (Q2) {$x= {*}{*}x$};
+            \node[state, initial text={}] (Q1) {$\&x= *x$};
+            \node[state, right=of Q1] (Q2) {$x= {*}{*}x$};
 
-          \path[->]
+            \path[->]
             (Q1) edge[bend left, above] (Q2)
             (Q2) edge[bend left, below] (Q1);
 
@@ -241,17 +241,17 @@ if(*x != 4 + y){...}
 
 
             \path[->]
-              (Q1) edge[bend left] (Q2)
-              (Q2) edge[bend left] (Q3)
-              (Q3) edge[bend left] (Q1);
+            (Q1) edge[bend left] (Q2)
+            (Q2) edge[bend left] (Q3)
+            (Q3) edge[bend left] (Q1);
 
-          \end{tikzpicture}
-        \end{minipage}
-        \begin{tikzpicture}[overlay]
-            \draw[->, thick] (0, 0) -- (1, 0);
         \end{tikzpicture}
-        \hfill%
-        \begin{minipage}{0.49\textwidth}
+    \end{minipage}
+    \begin{tikzpicture}[overlay]
+        \draw[->, thick] (0, 0) -- (1, 0);
+    \end{tikzpicture}
+    \hfill%
+    \begin{minipage}{0.49\textwidth}
 
         \begin{tikzpicture}[shorten >=1pt, node distance=1.5cm, on grid, auto, state/.style={rectangle, rounded corners, draw, inner sep=5pt, align=center, minimum size=0.5cm}]
 
@@ -266,16 +266,16 @@ if(*x != 4 + y){...}
 
 
             \path[->]
-              (Q1) edge[bend left] (Q2)
-              (Q2) edge[bend left] (Q3)
-              (Q3) edge[bend left] (Q4)
-              (Q4) edge[bend left] (Q5)
-              (Q5) edge[bend left] (Q6)
-              (Q6) edge[bend left] (Q1)
-              ;
+            (Q1) edge[bend left] (Q2)
+            (Q2) edge[bend left] (Q3)
+            (Q3) edge[bend left] (Q4)
+            (Q4) edge[bend left] (Q5)
+            (Q5) edge[bend left] (Q6)
+            (Q6) edge[bend left] (Q1)
+            ;
 
-          \end{tikzpicture}
-        \end{minipage}
+        \end{tikzpicture}
+    \end{minipage}
 \end{frame}
 
 
@@ -284,32 +284,30 @@ if(*x != 4 + y){...}
         \item Add a term for each empty state in the automaton
     \end{itemize}
     \[
-    \T = \{
+        \T = \{
         \&x,x,*x, {*}{*}x,\textcolor{TUMAccentOrange}{{*}{*}{*}x,{*}{*}{*}{*}x}
-    \}
+        \}
     \]
 
-        \begin{minipage}{0.49\textwidth}
+    \centering
+    \begin{tikzpicture}[shorten >=1pt, node distance=1.5cm, on grid, auto, state/.style={rectangle, rounded corners, draw, inner sep=5pt, align=center, minimum size=0.5cm}]
 
-        \begin{tikzpicture}[shorten >=1pt, node distance=1.5cm, on grid, auto, state/.style={rectangle, rounded corners, draw, inner sep=5pt, align=center, minimum size=0.5cm}]
+        \node[state, initial text=] (Q1) {$\&x$};
+        \node[state, right= 1.5cm of Q1] (Q2) {$x$};
+        \node[state, below=of Q2] (Q3) {$*x$};
+        \node[state, below=of Q3] (Q4) {${*}{*}x$};
+        \node[state, left=of Q4] (Q5) {$\textcolor{TUMAccentOrange}{{*}{*}{*}x}$};
+        \node[state, above left=of Q5] (Q6) {$\textcolor{TUMAccentOrange}{{*}{*}{*}{*}x}$};
+        \path[->]
+        (Q1) edge[bend left] (Q2)
+        (Q2) edge[bend left] (Q3)
+        (Q3) edge[bend left] (Q4)
+        (Q4) edge[bend left] (Q5)
+        (Q5) edge[bend left] (Q6)
+        (Q6) edge[bend left] (Q1)
+        ;
 
-            \node[state, initial text=] (Q1) {$\&x$};
-            \node[state, right= 1.5cm of Q1] (Q2) {$x$};
-            \node[state, below=of Q2] (Q3) {$*x$};
-            \node[state, below=of Q3] (Q4) {${*}{*}x$};
-            \node[state, left=of Q4] (Q5) {$\textcolor{TUMAccentOrange}{{*}{*}{*}x}$};
-            \node[state, above left=of Q5] (Q6) {$\textcolor{TUMAccentOrange}{{*}{*}{*}{*}x}$};
-            \path[->]
-              (Q1) edge[bend left] (Q2)
-              (Q2) edge[bend left] (Q3)
-              (Q3) edge[bend left] (Q4)
-              (Q4) edge[bend left] (Q5)
-              (Q5) edge[bend left] (Q6)
-              (Q6) edge[bend left] (Q1)
-              ;
-
-          \end{tikzpicture}
-        \end{minipage}
+    \end{tikzpicture}
 \end{frame}
 
 \begin{frame}{Widening/narrowing}
@@ -334,17 +332,17 @@ if(*x != 4 + y){...}
 \begin{frame}{Litmus Tests}
     \begin{tikzpicture}
         \begin{axis}[
-            ybar,
-            symbolic x coords={\base, \vareq, \cpo},
-            xtick=data,
-            ymin=0, ymax=109,
-            bar width=1cm,
-            ylabel={Number of Proven Assertions},
-            xlabel={Analyses},
-            nodes near coords,
-            nodes near coords align={vertical},
-        ]
-        \addplot coordinates {(\base, 17) (\vareq, 23) (\cpo, 109)};
+                ybar,
+                symbolic x coords={\base, \vareq, \cpo},
+                xtick=data,
+                ymin=0, ymax=109,
+                bar width=1cm,
+                ylabel={Number of Proven Assertions},
+                xlabel={Analyses},
+                nodes near coords,
+                nodes near coords align={vertical},
+            ]
+            \addplot coordinates {(\base, 17) (\vareq, 23) (\cpo, 109)};
         \end{axis}
     \end{tikzpicture}
 
@@ -353,17 +351,17 @@ if(*x != 4 + y){...}
 \begin{frame}{Coreutils Tests}
     \begin{tikzpicture}
         \begin{axis}[
-            ybar,
-            symbolic x coords={\base, \vareq, \cpo},
-            xtick=data,
-            ymin=0, ymax=19488,
-            bar width=1cm,
-            ylabel={Number of Proven Assertions},
-            xlabel={Analyses},
-            nodes near coords,
-            nodes near coords align={vertical},
-        ]
-        \addplot coordinates {(\base, 4636) (\vareq, 8188) (\cpo, 19488)};
+                ybar,
+                symbolic x coords={\base, \vareq, \cpo},
+                xtick=data,
+                ymin=0, ymax=19488,
+                bar width=1cm,
+                ylabel={Number of Proven Assertions},
+                xlabel={Analyses},
+                nodes near coords,
+                nodes near coords align={vertical},
+            ]
+            \addplot coordinates {(\base, 4636) (\vareq, 8188) (\cpo, 19488)};
         \end{axis}
     \end{tikzpicture}
 
@@ -412,32 +410,32 @@ if(*x != 4 + y){...}
 
 \begin{frame}{Overlapping values}
 
-{
-	\centering
+    {
+        \centering
 
-	\begin{tikzpicture}[
-		memory/.style={draw, thick, minimum height=0.6cm},
-		pointer/.style={-Stealth, thick},
-		bracket/.style={decorate,decoration={brace, amplitude=10pt, mirror}},
-		bracketabove/.style={decorate,decoration={brace, amplitude=10pt}}
-	]
+        \begin{tikzpicture}[
+                memory/.style={draw, thick, minimum height=0.6cm},
+                pointer/.style={-Stealth, thick},
+                bracket/.style={decorate,decoration={brace, amplitude=10pt, mirror}},
+                bracketabove/.style={decorate,decoration={brace, amplitude=10pt}}
+            ]
 
-	\draw[memory] (0,0) rectangle (8,0.6);
+            \draw[memory] (0,0) rectangle (8,0.6);
 
-	\draw[pointer] (3, 1.3) node[above] {$t_2$} -- (3, 0.7);
-	\draw[pointer] (0, -0.7) node[below] {$t_1$} -- (0, -0.1);
+            \draw[pointer] (3, 1.3) node[above] {$t_2$} -- (3, 0.7);
+            \draw[pointer] (0, -0.7) node[below] {$t_1$} -- (0, -0.1);
 
-	\draw[bracketabove] (3, 0.6) -- node[above=7pt] {$k_2$} (8, 0.6);
-	\draw[bracketabove] (0, 0.6) -- node[above=7pt] {$z'$} (3, 0.6);
-	\draw[bracket] (0, 0) -- node[below=5pt] {$k_1$} (6, 0);
+            \draw[bracketabove] (3, 0.6) -- node[above=7pt] {$k_2$} (8, 0.6);
+            \draw[bracketabove] (0, 0.6) -- node[above=7pt] {$z'$} (3, 0.6);
+            \draw[bracket] (0, 0) -- node[below=5pt] {$k_1$} (6, 0);
 
-	\draw[dashed] (3, 0) -- (3, 0.6);
-	\draw[dashed] (6, 0) -- (6, 0.6);
+            \draw[dashed] (3, 0) -- (3, 0.6);
+            \draw[dashed] (6, 0) -- (6, 0.6);
 
-	\fill[TUMBlue!50] (3,0) rectangle (6,0.6); % overlap
+            \fill[TUMBlue!50] (3,0) rectangle (6,0.6); % overlap
 
-	\end{tikzpicture}
-}
+        \end{tikzpicture}
+    }
     \begin{itemize}
         \item $t_2 \equiv_{k} z' + t_1$.
         \item There is an overlap if $z' < k_1$.
