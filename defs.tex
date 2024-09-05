@@ -1,0 +1,79 @@
+\usepackage[utf8]{inputenc}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+\usepackage{tikz}
+\usepackage{xcolor}
+\usetikzlibrary{automata, arrows.meta, shapes.geometric, positioning}
+
+\usepackage{minted}
+\usepackage{todonotes}
+
+
+% \newtheorem{theorem}{Theorem}[chapter]
+% \newtheorem{corollary}{Corollary}[theorem]
+% \newtheorem{lemma}[theorem]{Lemma}
+% \newtheorem{proposition}[theorem]{Proposition}
+% \theoremstyle{definition}
+% \newtheorem{example}[theorem]{Example}
+% \newtheorem{definition}[theorem]{Definition}
+
+
+
+\newcommand{\ZZ}{\mathbb{Z} \times \mathbb{Z}}
+\newcommand{\nequiv}{\not\equiv}
+\newcommand{\nequivp}{\nequiv_{\Psi,\T}}
+\newcommand{\equivp}{\equiv_{\Psi,\T}}
+% \renewcommand{\labelenumii}{\arabic{enumii}.}
+\newcommand{\join}{\sqcup}
+\newcommand{\meet}{\sqcap}
+\newcommand{\widen}{\nabla}
+\newcommand{\narrow}{\Delta}
+\newcommand{\sem}[1]{\llbracket#1\rrbracket}
+\newcommand{\Z}{\mathbb{Z}}
+\renewcommand{\L}{\mathcal{L}}
+\newcommand{\T}{\mathcal{T}}
+\newcommand{\Set}{\mathcal{S}}
+\newcommand{\oT}{{\overline{\mathcal{T}}}}
+\newcommand{\F}{\mathcal{F}}
+\newcommand{\A}{\mathcal{A}}
+\newcommand{\X}{\mathcal{X}}
+\newcommand{\V}{\mathcal{V}}
+\newcommand{\malloc}{\textsf{malloc}}
+\newcommand{\nf}{\textsf{nf}}
+\newcommand{\restr}[2]{\left.\kern-\nulldelimiterspace#1\vphantom{|}\right|_{#2}}
+\newcommand{\otau}{\overline{\tau}}
+\newcommand{\angl}[1]{\langle#1\rangle}
+% \newcommand{\widen}{\mathop{{\sqcup}\hspace*{-0.6em}\raisebox{.4ex}{\setlength{\unitlength}{1em}\line(1,0){.53}}}}
+% \newcommand{\narrow}{\mathop{{\sqcap}\hspace*{-0.6em}\raisebox{.9ex}{\setlength{\unitlength}{1em}\line(1,0){.50}}}}
+\newcommand{\ignore}[1]{}
+\newcommand{\cpo}{\textsf{C-2PO}}
+\newcommand{\goblint}{\textsc{Goblint}}
+\newcommand{\find}[1]{\textsf{find}(#1)}
+\newcommand{\union}[3]{\textsf{union}(#1, #2, #3)}
+\newcommand{\closure}[4]{\textsf{closure}(#4, #1 = #2 + #3)}
+\newcommand{\ext}[2]{\textsf{ext}\,{#1}\,{#2}}
+\newcommand{\enter}{\textsf{enter}}
+\newcommand{\combine}{\textsf{combine}}
+\newcommand{\base}{\emph{base}}
+\newcommand{\vareq}{\emph{var\_eq}}
+\newcommand{\cpou}{$c$-$2po_1$}
+\newcommand{\cpod}{$c$-$2po_2$}
+\newcommand{\cpot}{$c$-$2po_3$}
+\newcommand{\cpoq}{$c$-$2po_4$}
+
+
+% Define TUM corporate design colors
+% Taken from http://portal.mytum.de/corporatedesign/index_print/vorlagen/index_farben
+\definecolor{TUMBlue}{HTML}{0065BD}
+\definecolor{TUMSecondaryBlue}{HTML}{005293}
+\definecolor{TUMSecondaryBlue2}{HTML}{003359}
+\definecolor{TUMBlack}{HTML}{000000}
+\definecolor{TUMWhite}{HTML}{FFFFFF}
+\definecolor{TUMDarkGray}{HTML}{333333}
+\definecolor{TUMGray}{HTML}{808080}
+\definecolor{TUMLightGray}{HTML}{CCCCC6}
+\definecolor{TUMAccentGray}{HTML}{DAD7CB}
+\definecolor{TUMAccentOrange}{HTML}{E37222}
+\definecolor{TUMAccentGreen}{HTML}{A2AD00}
+\definecolor{TUMAccentLightBlue}{HTML}{98C6EA}
+\definecolor{TUMAccentBlue}{HTML}{64A0C8}
