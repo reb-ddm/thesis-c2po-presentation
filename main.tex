@@ -23,6 +23,7 @@
               \[
                   \&x = 4 + \&y
               \]
+
     \end{itemize}
 \end{frame}
 
@@ -61,9 +62,17 @@
     \end{minipage}
 \end{frame}
 
-\begin{frame}{Why are disequalities important}
-    TODO
-    not the same memory block etc
+\begin{frame}{Disequalities}
+    \[
+        x \neq 4 + y
+    \]
+    \[
+        bl(x) = bl(y)
+    \]
+    \begin{itemize}
+        \item To know which terms are not modified by an assignment
+        \item Block disequalities: terms are not in the same block/memory object
+    \end{itemize}
 \end{frame}
 
 \section{Abstract Domain}
@@ -77,7 +86,7 @@
               \begin{itemize}
                   \item Quantitative equalities
                         \[
-                            (A = 1 + y) \land (\&x = \&y)
+                            (x = 1 + A) \land (\&x = \&y)
                         \]
                   \item Quantitative disequalities
                         \[
@@ -92,12 +101,11 @@
 \end{frame}
 
 \begin{frame}{Quantitative Finite Automaton (QFA)}
-    \todo[inline]{How to add equalities?}
     \[
-        \T=\{A, *(1 + A), \&x, x, \&y, y, *y\}
+        \T=\{ \&x, x, *x, A, *(1 + A), \&y\}
     \]
     \[
-        (y = 1 + A) \land (\&x = \&y)
+        (x = 1 + A) \land (\&x = \&y)
     \]
     \centering
     \begin{tikzpicture}[shorten >=1pt, node distance=5cm, on grid, auto, state/.style={rectangle, rounded corners, draw, inner sep=5pt, align=center}]
@@ -105,12 +113,11 @@
         \node[state] (y) {$\&x =\&y$};
 
         \node[state, right=3.5cm of y] (AB) {$\begin{array}{c}
-                    x = y = \\
-                    1 + A
+                    1 + A = x
                 \end{array}$};
 
         \node[state, right=4cm of AB] (ABs) {$\begin{array}{c}
-                    *(1+A) = *y
+                    *(1+A) = *x
                 \end{array}$};
 
         \path[->]
@@ -123,10 +130,10 @@
 
 \begin{frame}{QFA: Insert Terms}
     \[
-        \T=\{A, *(1 + A), \&x, x, \&y, y, *y, \textcolor{TUMAccentOrange}{*x}\}
+        \T=\{\&x, x, *x, A, *(1 + A), \&y, \textcolor{TUMAccentOrange}{y, *y}\}
     \]
     \[
-        (y = 1 + A) \land (\&x = \&y)
+        (x = 1 + A) \land (\&x = \&y)
     \]
     \centering
     \begin{tikzpicture}[shorten >=1pt, node distance=5cm, on grid, auto, state/.style={rectangle, rounded corners, draw, inner sep=5pt, align=center}]
@@ -134,12 +141,13 @@
         \node[state] (y) {$\&x =\&y$};
 
         \node[state, right=3.5cm of y] (AB) {$\begin{array}{c}
-                    x = y = \\
-                    1 + A
+            1 + A = x \\
+                    \textcolor{TUMAccentOrange}{\,= y}
                 \end{array}$};
 
         \node[state, right=4cm of AB] (ABs) {$\begin{array}{c}
-                    *(1+A) = *y \textcolor{TUMAccentOrange}{\,= *x}
+                    *(1+A) = *x \\
+                    \textcolor{TUMAccentOrange}{\,= *y}
                 \end{array}$};
 
         \path[->]
@@ -152,8 +160,33 @@
 
 \end{frame}
 
-\begin{frame}{restriction}
-    TODO
+\begin{frame}{QFA: Remove Terms}
+    \[
+        \T=\{\text{\textcolor{TUMAccentOrange}{\sout{$\&x, x, *x,$}}}A, *(1 + A), \&y\}
+    \]
+    \[
+        (x = 1 + A) \land (\&x = \&y)
+    \]
+    \centering
+    \begin{tikzpicture}[shorten >=1pt, node distance=5cm, on grid, auto, state/.style={rectangle, rounded corners, draw, inner sep=5pt, align=center}]
+
+        \node[state] (y) {$\text{\textcolor{TUMAccentOrange}{\sout{\&x=}}} \,\&y$};
+
+        \node[state, right=3.5cm of y] (AB) {$\begin{array}{c}
+            1 + A \, \text{\textcolor{TUMAccentOrange}{\sout{= x}}}
+                \end{array}$};
+
+        \node[state, right=4cm of AB] (ABs) {$\begin{array}{c}
+                    *(1+A) \, \text{\textcolor{TUMAccentOrange}{\sout{= *x}}}
+                \end{array}$};
+
+        \path[->]
+        (y) edge[] (AB)
+        (AB) edge[] (ABs);
+
+
+    \end{tikzpicture}
+
 \end{frame}
 
 \begin{frame}[containsverbatim]{Block Disequalities}
@@ -197,21 +230,12 @@ if(*x != 4 + y){...}
     \end{itemize}
 \end{frame}
 
-\section{Partial Order}
-
-\begin{frame}{Equality}
-    \todo[inline]{partial order}
-    \begin{Definition}
-        Eine Definition
-    \end{Definition}
-\end{frame}
-
 \section{Meet}
 \begin{frame}{Meet}
     \begin{itemize}
 
         \item Equivalent to conjunction $\land$
-        \item Update parition and QFA
+        \item Update partition and QFA
         \item Add block/quantitative disequalities
         \item Closure of disequalities
 
@@ -231,13 +255,16 @@ if(*x != 4 + y){...}
 
             \node[state, initial text={}] (Q1) {$\&x= *x$};
             \node[state, right=of Q1] (Q2) {$x= {*}{*}x$};
+            \node[below=0.5cm of Q1] (s1) {$s_1$};
+            \node[below=0.5cm of Q2] (s2) {$s_2$};
+
 
             \path[->]
             (Q1) edge[bend left, above] (Q2)
             (Q2) edge[bend left, below] (Q1);
 
         \end{tikzpicture}
-
+\vspace{2cm}
         \begin{tikzpicture}[shorten >=1pt, node distance=3cm, on grid, auto, state/.style={rectangle, rounded corners, draw, inner sep=5pt, align=center}]
 
             \node[state, initial text={}] (Q1) {$\&x= {*}{*}x$};
@@ -262,8 +289,8 @@ if(*x != 4 + y){...}
 
             \node[state, initial text=] (Q1) {$\&x$};
             \node[state, right= 1.5cm of Q1] (Q2) {$x$};
-            \node[state, below=of Q2] (Q3) {$*x$};
-            \node[state, below=of Q3] (Q4) {${*}{*}x$};
+            \node[state, below right=of Q2] (Q3) {$*x$};
+            \node[state, below left=of Q3] (Q4) {${*}{*}x$};
             \node[state, left=of Q4] (Q5) {};
             \node[state, above left=of Q5] (Q6) {};
 
@@ -299,8 +326,8 @@ if(*x != 4 + y){...}
 
         \node[state, initial text=] (Q1) {$\&x$};
         \node[state, right= 1.5cm of Q1] (Q2) {$x$};
-        \node[state, below=of Q2] (Q3) {$*x$};
-        \node[state, below=of Q3] (Q4) {${*}{*}x$};
+        \node[state, below right=of Q2] (Q3) {$*x$};
+        \node[state, below left=of Q3] (Q4) {${*}{*}x$};
         \node[state, left=of Q4] (Q5) {$\textcolor{TUMAccentOrange}{{*}{*}{*}x}$};
         \node[state, above left=of Q5] (Q6) {$\textcolor{TUMAccentOrange}{{*}{*}{*}{*}x}$};
         \path[->]
@@ -369,11 +396,11 @@ if(*x != 4 + y){...}
         t_1\,{:=}\,z + t
     \]
     \begin{itemize}
-       \item Fresh auxiliary $A$
-       \item Add equality $A = z + t$
-       \item Remove terms modified by an assignment to $t_1$
-       \item Add equality $t_1 = A$
-       \item Remove $A$
+        \item Fresh auxiliary $A$
+        \item Add equality $A = z + t$
+        \item Remove terms modified by an assignment to $t_1$
+        \item Add equality $t_1 = A$
+        \item Remove $A$
     \end{itemize}
 \end{frame}
 
@@ -382,10 +409,10 @@ if(*x != 4 + y){...}
         t_1\,{:=}\,\malloc
     \]
     \begin{itemize}
-       \item For each $t \in \T$, add:
-       \[
-       bl(t) \neq bl(t_1)
-       \]
+        \item For each $t \in \T$, add:
+              \[
+                  bl(t) \neq bl(t_1)
+              \]
     \end{itemize}
 \end{frame}
 
@@ -456,20 +483,51 @@ if(*x != 4 + y){...}
     \bibliography{main.bib}
 \end{frame}
 
+
+\begin{frame}{Two-dimensional Memory Model}
+    \begin{itemize}
+        \item In C: pointer arithmetic is not allowed to go outside the current memory object
+        \item Address: (blockID, offset)
+        \item $bl(a,b) = a$
+
+    \end{itemize}
+    \begin{tikzpicture}
+
+        \def\blockheight{0.8}
+        \def\startx{0}
+
+        \draw (\startx, 0) rectangle (\startx + 3, -\blockheight);
+        \node[anchor=west] at (\startx, -0.5*\blockheight) {int x};
+        \draw (\startx, -\blockheight) rectangle (\startx + 5, -2*\blockheight);
+        \node[anchor=west] at (\startx, -1.5*\blockheight) {struct a};
+        \draw (\startx, -2*\blockheight) rectangle (\startx + 7, -3*\blockheight);
+        \node[anchor=west] at (\startx, -2.5*\blockheight) {int a[5]};
+        \draw (\startx, -3*\blockheight) rectangle (\startx + 9, -4*\blockheight);
+        \node[anchor=west] at (\startx, -3.5*\blockheight) {malloc\#001};
+
+        \draw[->] (\startx,  -4*\blockheight) -- (\startx + 10, -4*\blockheight) node[anchor=north] {Offset};
+        \draw[->] (\startx,  -4*\blockheight) -- (\startx, \blockheight) node[anchor=south, rotate=90] {BlockID};
+
+        \node[anchor=east] at (\startx, -1*\blockheight) {3};
+        \node[anchor=east] at (\startx, -2*\blockheight) {2};
+        \node[anchor=east] at (\startx, -3*\blockheight) {1};
+        \node[anchor=east] at (\startx, -4*\blockheight) {0};
+
+        \foreach \x in {0, 2, 4, 6, 8} {
+                \draw (\startx + \x, -4*\blockheight) -- (\startx + \x, -4*\blockheight);
+                \node[anchor=north] at (\startx + \x, -4*\blockheight) {\x};
+            }
+
+    \end{tikzpicture}
+\end{frame}
+
 \begin{frame}{Representation of structs and arrays}
-    \begin{Definition}
-        Eine Definition
-    \end{Definition}
+    \begin{itemize}
+        \item $a[1]\equiv *(a+1)$
+        \item $a[i][j] \equiv (a + (i \cdot m + j) \cdot 32) \quad \text{for \texttt{int a[n][m]}}$
+        \item struct $s$: $s.f \equiv *(\&s + 32)$
+    \end{itemize}
 \end{frame}
-
-
-
-\begin{frame}{Interprocedural?}
-    \begin{Definition}
-        Eine Definition
-    \end{Definition}
-\end{frame}
-
 
 \begin{frame}{Overlapping values}
 
@@ -505,5 +563,37 @@ if(*x != 4 + y){...}
     \end{itemize}
 
 \end{frame}
+
+
+
+\begin{frame}{Equality}
+    \todo[inline]{partial order}
+    \begin{Definition}
+        Eine Definition
+    \end{Definition}
+\end{frame}
+
+
+
+\begin{frame}{Equality}
+    How to add equalities:
+\end{frame}
+
+\begin{frame}{Interprocedural}
+    enter:
+    \begin{itemize}
+        \item Remove local variables of caller.
+        \item Add shadow variable $p'$ for each parameter $p$ and the equality $p = p'$.
+    \end{itemize}
+    combine:
+    \begin{itemize}
+        \item Remove tainted variables from caller state.
+        \item Meet caller and callee state.
+        \item Add equality $p' = e$ for each parameter $p$ called with the expression $e$.
+        \item Assign return value to variable if necessary.
+        \item Remove local variables of callee and shadow variables.
+    \end{itemize}
+\end{frame}
+
 
 \end{document}
