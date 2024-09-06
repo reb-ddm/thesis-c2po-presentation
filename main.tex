@@ -6,7 +6,7 @@
 \input{defs}
 
 
-\title[Weakly-Relational Pointer Analysis]{A Weakly-Relational Pointer Analysis for the Goblint Abstract Interpreter}
+\title[\cpo{}: A Weakly-Relational Pointer Analysis]{\cpo{}: A Weakly-Relational Pointer Analysis for the Goblint Abstract Interpreter}
 \author{Rebecca Ghidini}
 \date{\today}
 
@@ -23,7 +23,7 @@
               \[
                   \&x = 4 + \&y
               \]
-
+        \item \cpo{}: C-Analysis based on 2-Pointer Logic, introduced by Seidl et al.~\cite{2pointer}
     \end{itemize}
 \end{frame}
 
@@ -141,7 +141,7 @@
         \node[state] (y) {$\&x =\&y$};
 
         \node[state, right=3.5cm of y] (AB) {$\begin{array}{c}
-            1 + A = x \\
+                    1 + A = x \\
                     \textcolor{TUMAccentOrange}{\,= y}
                 \end{array}$};
 
@@ -173,7 +173,7 @@
         \node[state] (y) {$\text{\textcolor{TUMAccentOrange}{\sout{\&x=}}} \,\&y$};
 
         \node[state, right=3.5cm of y] (AB) {$\begin{array}{c}
-            1 + A \, \text{\textcolor{TUMAccentOrange}{\sout{= x}}}
+                    1 + A \, \text{\textcolor{TUMAccentOrange}{\sout{= x}}}
                 \end{array}$};
 
         \node[state, right=4cm of AB] (ABs) {$\begin{array}{c}
@@ -255,8 +255,8 @@ if(*x != 4 + y){...}
 
             \node[state, initial text={}] (Q1) {$\&x= *x$};
             \node[state, right=of Q1] (Q2) {$x= {*}{*}x$};
-            \node[below=0.5cm of Q1] (s1) {$s_1$};
-            \node[below=0.5cm of Q2] (s2) {$s_2$};
+            \node[above=0.5cm of Q1] (s1) {$s_1$};
+            \node[above=0.5cm of Q2] (s2) {$s_2$};
 
 
             \path[->]
@@ -264,13 +264,17 @@ if(*x != 4 + y){...}
             (Q2) edge[bend left, below] (Q1);
 
         \end{tikzpicture}
-\vspace{2cm}
+
+        \vspace*{1cm}
+
         \begin{tikzpicture}[shorten >=1pt, node distance=3cm, on grid, auto, state/.style={rectangle, rounded corners, draw, inner sep=5pt, align=center}]
 
             \node[state, initial text={}] (Q1) {$\&x= {*}{*}x$};
             \node[state, right=of Q1] (Q2) {$x$};
             \node[state, below right=1.5cm and 1.5cm of Q1] (Q3) {$*x$};
-
+            \node[above=0.5cm of Q1] (s1) {$v_1$};
+            \node[above=0.5cm of Q2] (s2) {$v_2$};
+            \node[above=0.5cm of Q3] (s3) {$v_3$};
 
             \path[->]
             (Q1) edge[bend left] (Q2)
@@ -293,7 +297,12 @@ if(*x != 4 + y){...}
             \node[state, below left=of Q3] (Q4) {${*}{*}x$};
             \node[state, left=of Q4] (Q5) {};
             \node[state, above left=of Q5] (Q6) {};
-
+            \node[above=0.5cm of Q1] (s1) {$\angl{s_1,v_1}$};
+            \node[above=0.5cm of Q2] (s2) {$\angl{s_2,v_2}$};
+            \node[above right=0.5cm and 0.5cm of Q3] (s3) {$\angl{s_1,v_3}$};
+            \node[above=0.5cm of Q4] (s4) {$\angl{s_2,v_1}$};
+            \node[above=0.5cm of Q5] (s5) {$\angl{s_1,v_2}$};
+            \node[above left=0.5cm and 0.5cm of Q6] (s6) {$\angl{s_2,v_3}$};
 
 
 
@@ -420,7 +429,19 @@ if(*x != 4 + y){...}
 \frame{\tableofcontents[currentsection]}
 
 \begin{frame}{Precision}
+    \begin{itemize}
+        \item 29 litmus tests, manually annotated invariants
+        \item GNU Core Utilities, automatically annotated invariants by \cpo\
+        \item Compared three different \goblint\ analyses:
+              \begin{itemize}
+                  \item \base{}: basic goblint analysis, including a non-relational pointer analysis
+                  \item \vareq{}: tracks must-equalities between general expressions
+                  \item \cpo\ implementation in \goblint\
+              \end{itemize}
+    \end{itemize}
 \end{frame}
+
+
 \begin{frame}{Litmus Tests}
     \begin{tikzpicture}
         \begin{axis}[
@@ -460,19 +481,31 @@ if(*x != 4 + y){...}
 \end{frame}
 
 \begin{frame}{Performance}
-
+    \begin{itemize}
+        \item SV-Comp: large set of verification tasks used for software competition
+        \item Compared efficiency of \goblint\ with \cpo\ and without (\base)
+        \item Few additional passed tests; some additional timeouts
+        \item 95\% have less than 3x slowdown
+    \end{itemize}
 \end{frame}
 
 \begin{frame}{SV-Comp Results}
-    \includegraphics[scale=0.3]{images/base-vs-cpo4.png}
+    \todo[inline]{add axes}
+    \includegraphics[scale=0.3]{images/base-vs-cpo4-cropped.png}
 \end{frame}
 
 \section{Conclusion}
 \frame{\tableofcontents[currentsection]}
 
 \begin{frame}{Conclusion}
-    was haben wir gelernt, ist sie geeignet, was sind die vorteile
-    man kann auch unsere analyse benutzen um zu wissen, ob sachen bei einem assignment überschrieben werden, so wie wir die non-relational pointer analyse benutzen
+    \begin{itemize}
+        \item \cpo\ can find additional invariants to current \goblint\ analyses
+        \item Increase precision by cooperating with non-relational analysis
+        \item Could be also the opposite
+        \item Find relational properties with relatively small overhead (because of weakly-)
+    \end{itemize}
+    %was haben wir gelernt, ist sie geeignet, was sind die vorteile
+    %man kann auch unsere analyse benutzen um zu wissen, ob sachen bei einem assignment überschrieben werden, so wie wir die non-relational pointer analyse benutzen
 \end{frame}
 
 \appendix
