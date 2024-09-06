@@ -1,8 +1,10 @@
 \documentclass{beamer}
 
+\usetheme{JuanLesPins}
+
+
 \input{defs}
 
-\usetheme{Warsaw}  %% Themenwahl
 
 \title[Weakly-Relational Pointer Analysis]{A Weakly-Relational Pointer Analysis for the Goblint Abstract Interpreter}
 \author{Rebecca Ghidini}
@@ -195,8 +197,10 @@ if(*x != 4 + y){...}
     \end{itemize}
 \end{frame}
 
+\section{Partial Order}
 
 \begin{frame}{Equality}
+    \todo[inline]{partial order}
     \begin{Definition}
         Eine Definition
     \end{Definition}
@@ -214,6 +218,7 @@ if(*x != 4 + y){...}
     \end{itemize}
 \end{frame}
 
+\section{Join}
 \begin{frame}{Join}
     \[
         \T = \{
@@ -310,19 +315,79 @@ if(*x != 4 + y){...}
     \end{tikzpicture}
 \end{frame}
 
-\begin{frame}{Widening/narrowing}
-    \begin{Definition}
-        Eine Definition
-    \end{Definition}
+\section{Widening and Narrowing}
+\begin{frame}{Widening}
+    \begin{itemize}
+        \item Infinite strictly ascending chain:
+    \end{itemize}
+    \[
+        \Psi_n \equiv (*^{2^n} \&x = \&x)\hspace{6pt} (n\geq 0).
+    \]
+    \begin{itemize}
+        \item Limit the terms of the result to the set of terms of the first element
+    \end{itemize}
+    \[\Psi_1 \widen \Psi_2 = \restr{(\Psi_1 \join \Psi_2)}{\T_1}.\]
+\end{frame}
+
+\begin{frame}{Narrowing}
+    \begin{itemize}
+        \item Infinite strictly descending chains:
+    \end{itemize}
+    \[
+        \Phi_n \equiv\bigwedge_{i=1}^n (\&y = *(i+\&x))\qquad(n\geq 0)
+    \]
+    \[
+        \Psi_n \equiv (y\neq n+\&x)\qquad(n\geq 0)
+    \]
+    \begin{itemize}
+        \item Limit the terms of the result and the possible offsets
+              appearing in disequalities -> to what?
+    \end{itemize}
+
+\end{frame}
+
+\section{Assignment}
+
+\begin{frame}{Assignment}
+    \[
+        t_1\,{:=}\,?
+    \]
+    \begin{itemize}
+        \item Forget all terms that may be modfied $\rightarrow$ terms that have the same address
+        \item If $t_1 = A$ or $t_1 = \&x$: remove terms that have $t_1$ as subterm
+        \item If $t_1 = *(z + t)$: keep only terms $*(z' + v)$ where $t \neq (z' - z) + v$
+              \begin{itemize}
+                  \item $t = z_1 + v$ and $z_1 \neq (z' - z)$ and they do not overlap
+                  \item $t \neq (z' - z) + v$ or $bl(t) \neq bl(v)$
+                  \item use non-relational analysis: possible values of $t$ and $(z' - z) + v$ do not intersect
+              \end{itemize}
+    \end{itemize}
 \end{frame}
 
 \begin{frame}{Assignment}
-    \begin{Definition}
-        Eine Definition
-    \end{Definition}
+    \[
+        t_1\,{:=}\,z + t
+    \]
+    \begin{itemize}
+       \item Fresh auxiliary $A$
+       \item Add equality $A = z + t$
+       \item Remove terms modified by an assignment to $t_1$
+       \item Add equality $t_1 = A$
+       \item Remove $A$
+    \end{itemize}
 \end{frame}
 
-
+\begin{frame}{Assignment}
+    \[
+        t_1\,{:=}\,\malloc
+    \]
+    \begin{itemize}
+       \item For each $t \in \T$, add:
+       \[
+       bl(t) \neq bl(t_1)
+       \]
+    \end{itemize}
+\end{frame}
 
 \section{Evaluation}
 \frame{\tableofcontents[currentsection]}
@@ -368,9 +433,7 @@ if(*x != 4 + y){...}
 \end{frame}
 
 \begin{frame}{Performance}
-    \begin{Definition}
-        Eine Definition
-    \end{Definition}
+
 \end{frame}
 
 \begin{frame}{SV-Comp Results}
