@@ -30,42 +30,13 @@
         \includegraphics[width=6cm]{images/Goblint car with C-3PO-presentation3.png}
     \end{minipage}
 
+    \[
+        (\&x = \&y) \land (x \neq *(1 + A))
+        \]
+
 \end{frame}
 
-\begin{frame}[fragile,containsverbatim]{Example}
-    %(etwas was goblint noch nicht konnte auch nicht mit var eq
-    %-> running example)
-    \begin{minipage}{0.49\textwidth}
 
-        \begin{tikzpicture}
-
-            % Settings
-            \def\blockheight{0.8}
-            \def\blockwidth{3.5}
-
-            % Memory blocks and addresses
-            \foreach \i/\label in {0/malloc1, 1/free1, 2/malloc2, 3/free2, 4/malloc3, 5/free3, 6/malloc4, 7/free4} {
-                    % Draw memory block
-                    \draw (0, -\i*\blockheight) rectangle (\blockwidth, -\i*\blockheight - \blockheight);
-                    % Label the memory block
-                    \node at (\blockwidth/2, -\i*\blockheight - \blockheight/2) {\label};
-                    % Print address to the right
-                    \node[above right=0.1cm and 0cm] at (\blockwidth, -\i*\blockheight - \blockheight/2) {\texttt{\the\numexpr 4*\i \relax}};
-                }
-        \end{tikzpicture}
-    \end{minipage}
-    \begin{minipage}{0.49\textwidth}
-
-        \begin{minted}{C}
-...
-p = (*malloc)();
-...
-(*free)(p);
-...
-\end{minted}
-        \only<2>{\alert{$\rightarrow$ $free = 4 + malloc$?}}
-    \end{minipage}
-\end{frame}
 
 \frame{\tableofcontents}
 
@@ -277,7 +248,7 @@ int *y = malloc();
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Join, group by offset}
+\begin{frame}{Join: Group by Offset}
     \[
         \T = \{
         A,B,C
@@ -299,7 +270,7 @@ int *y = malloc();
 
         \begin{tikzpicture}[shorten >=1pt, node distance=3cm, on grid, auto, state/.style={rectangle, rounded corners, draw, inner sep=5pt, align=center}]
 
-            \node[state] (Q1) {$\begin{array}{c}A = B+3\\ = C + 4\end{array}$};
+            \node[state] (Q1) {$\begin{array}{c}A = B+5\\ = C + 6\end{array}$};
             \node[above=1cm of Q1] (s1) {$v_1$};
             \node[left=2cm of Q1] (m1) {$\boldsymbol{M_2}$};
 
@@ -318,13 +289,13 @@ int *y = malloc();
             \node[below right=0.6cm and 2.1cm of Q1] (m1) {$\boldsymbol{M_1 \join M_2}$};
 
             \node[above=0.5cm of Q1] (s1) {$\angl{s_1,v_1, 0}$};
-            \node[above=0.5cm of Q2] (s1) {$\angl{s_1,v_1, 2}$};
+            \node[above=0.5cm of Q2] (s1) {$\angl{s_1,v_1, 4}$};
 
         \end{tikzpicture}
     \end{minipage}
 \end{frame}
 
-\begin{frame}{Join}
+\begin{frame}{Join: Product Automaton}
     \[
         \T = \{
         \&x,x,*x, {*}{*}x
@@ -401,7 +372,7 @@ int *y = malloc();
 \end{frame}
 
 
-\begin{frame}{Join}
+\begin{frame}{Join: Add Terms to Empty Equivalence Classes}
     %overapproximation
 
     \begin{itemize}
@@ -443,8 +414,8 @@ int *y = malloc();
     %\[\Psi_1 \widen \Psi_2 = \restr{(\Psi_1 \join \Psi_2)}{\T_1}.\]
     %\[\Psi_1 \narrow \Psi_2 = \restr{(\Psi_1 \meet \Psi_2)}{\T_1}.\]
     \begin{itemize}
-
-        \item Limit the terms of the result and the possible offsets
+\pause
+        \item Limit the possible offsets
               appearing in disequalities
     \end{itemize}
 
@@ -452,13 +423,15 @@ int *y = malloc();
 
 \section{Assignment}
 
-\begin{frame}{Assignment}
+\begin{frame}{Assignment to an Unknown Expression}
     \[
         t_1\,{:=}\,?
     \]
     \begin{itemize}
-        \item Forget all terms that may be modfied $\rightarrow$ terms that have the same address as $t_1$
+        \item Forget all terms that may be modfied $\rightarrow$ terms with the same address as $t_1$
+        \pause
         \item If $t_1 = A$ or $t_1 = \&x$: remove terms that have $t_1$ as subterm
+        \pause
         \item If $t_1 = *(z + t)$: keep only terms $*(z' + v)$ where
               \begin{itemize}
                 \item can infer $z + t \neq z' + v$ %or $bl(t) \neq bl(v)$
@@ -468,7 +441,7 @@ int *y = malloc();
     \end{itemize}
 \end{frame}
 
-\begin{frame}{Assignment}
+\begin{frame}{Assignment to a Term with an Offset}
     \[
         t_1\,{:=}\,z + t
     \]
@@ -481,13 +454,14 @@ int *y = malloc();
     \end{itemize}
 \end{frame}
 
-\begin{frame}{Assignment}
+\begin{frame}{Dynamic Memory Allocation}
     \[
         t_1\,{:=}\,\malloc
     \]
     \begin{itemize}
+        \pause
         \item Remove terms modified by an assignment to $t_1$
-
+\pause
         \item For each $t \in \T$, add:
               \[
                   bl(t) \neq bl(t_1)
@@ -497,10 +471,12 @@ int *y = malloc();
 
 \section{Evaluation}
 
-\begin{frame}{Precision}
+\begin{frame}{Precision Test Suite}
     \begin{itemize}
         \item 29 litmus tests, manually annotated invariants
-        \item GNU Core Utilities, automatically annotated invariants by \cpo\
+        \pause
+        \item GNU Core Utilities (Coreutils), automatically annotated invariants by \cpo\
+        \pause
         \item Compared three different \goblint\ analyses:
               \begin{itemize}
                   \item \base{}: basic goblint analysis, including a non-relational pointer analysis
@@ -511,7 +487,9 @@ int *y = malloc();
 \end{frame}
 
 
-\begin{frame}{Litmus Tests}
+\begin{frame}{Litmus Test Results}
+    \centering
+
     \begin{tikzpicture}
         \begin{axis}[
                 ybar,
@@ -530,7 +508,9 @@ int *y = malloc();
 
 \end{frame}
 
-\begin{frame}{Coreutils Tests}
+\begin{frame}{Coreutils Test Results}
+    \centering
+
     \begin{tikzpicture}
         \begin{axis}[
                 ybar,
@@ -549,19 +529,21 @@ int *y = malloc();
 
 \end{frame}
 
-\begin{frame}{Performance}
+\begin{frame}{Performance Experiments}
     \begin{itemize}
-        \item SV-Comp: large set of verification tasks used for software competition
         \item Compared efficiency of \goblint\ with \cpo\ and without (\base)
+        \item SV-Comp: large set of verification tasks used for software competition
+        \pause
         \item 95\% have less than 3x slowdown
+        \pause
         \item Few additional passed tests; some additional timeouts
     \end{itemize}
 \end{frame}
 
 \begin{frame}{SV-Comp Results}
-    \hspace*{-0.8cm}
-\begin{tikzpicture}
     \centering
+
+\begin{tikzpicture}
     % Load the picture
     \node[anchor=south west,inner sep=0] (image) at (0,0) {\includegraphics[width=10cm]{images/base-vs-cpo4-cropped.png}};
 
@@ -590,10 +572,19 @@ int *y = malloc();
 \end{tikzpicture}
 \end{frame}
 
+\begin{frame}{Related Work}
+    \begin{itemize}
+        \item TODO
+    \end{itemize}
+    %was haben wir gelernt, ist sie geeignet, was sind die vorteile
+    %man kann auch unsere analyse benutzen um zu wissen, ob sachen bei einem assignment überschrieben werden, so wie wir die non-relational pointer analyse benutzen
+\end{frame}
+
 \section{Conclusion}
 
 \begin{frame}{Conclusion}
     \begin{itemize}
+        \item TODO
         \item \cpo\ can find additional invariants to current \goblint\ analyses
         \item Increase precision by cooperating with non-relational analysis
         \item Find relational properties with relatively smaller overhead by considering only two terms
@@ -743,6 +734,82 @@ int *y = malloc();
         \item Assign return value to variable if necessary.
         \item Remove local variables of callee and shadow variables.
     \end{itemize}
+\end{frame}
+
+\begin{frame}{Not finitely representable join}
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \begin{tikzpicture}[shorten >=1pt, node distance=3cm, on grid, auto, state/.style={rectangle, rounded corners, draw, inner sep=5pt, align=center}]
+
+            \node[state] (Q1) {$\begin{array}{c}
+                        A=V
+                    \end{array}$};
+            \node [left=1.5cm of Q1] {$\boldsymbol{M_1}$};
+        \end{tikzpicture}
+
+    \end{minipage}
+            \begin{minipage}{0.45\textwidth}
+
+        \begin{tikzpicture}[shorten >=1pt, node distance=3cm, on grid, auto, state/.style={rectangle, rounded corners, draw, inner sep=5pt, align=center}]
+
+            \node[state] (Q1) {$\begin{array}{c}
+                        A=*A=..
+                    \end{array}$};
+
+            \node[state, right=3cm of Q1] (Q2) {$\begin{array}{c}
+                        V=*V=..
+                    \end{array}$};
+
+            \node[state, below right=2cm and 1.5cm of Q1] (Q3) {$\begin{array}{c}
+                        *(1+A)= *(1 + V),...
+                    \end{array}$};
+
+            \path[->]
+            (Q1) edge[loop below] node[left] {$0$} (Q1)
+            (Q2) edge[loop below] node[right] {$0$} (Q2)
+            (Q1) edge[] node[right] {$1$} (Q3)
+            (Q2) edge[] node[above left] {$1$} (Q3);
+
+            \node [below left=1cm and 1.7cm of Q1] {$\boldsymbol{M_2}$};
+
+        \end{tikzpicture}
+    \end{minipage}
+
+\end{frame}
+
+\begin{frame}[fragile,containsverbatim]{Example}
+    %(etwas was goblint noch nicht konnte auch nicht mit var eq
+    %-> running example)
+    \begin{minipage}{0.49\textwidth}
+
+        \begin{tikzpicture}
+
+            % Settings
+            \def\blockheight{0.8}
+            \def\blockwidth{3.5}
+
+            % Memory blocks and addresses
+            \foreach \i/\label in {0/malloc1, 1/free1, 2/malloc2, 3/free2, 4/malloc3, 5/free3, 6/malloc4, 7/free4} {
+                    % Draw memory block
+                    \draw (0, -\i*\blockheight) rectangle (\blockwidth, -\i*\blockheight - \blockheight);
+                    % Label the memory block
+                    \node at (\blockwidth/2, -\i*\blockheight - \blockheight/2) {\label};
+                    % Print address to the right
+                    \node[above right=0.1cm and 0cm] at (\blockwidth, -\i*\blockheight - \blockheight/2) {\texttt{\the\numexpr 4*\i \relax}};
+                }
+        \end{tikzpicture}
+    \end{minipage}
+    \begin{minipage}{0.49\textwidth}
+
+        \begin{minted}{C}
+...
+p = (*malloc)();
+...
+(*free)(p);
+...
+\end{minted}
+        \only<2>{\alert{$\rightarrow$ $free = 4 + malloc$?}}
+    \end{minipage}
 \end{frame}
 
 
