@@ -8,7 +8,7 @@
 
 \title[\cpo{}: A Weakly-Relational Pointer Analysis]{\cpo{}: A Weakly-Relational Pointer Analysis for Goblint}
 \author{Rebecca Ghidini}
-\date{\today}
+\date{19. September 2024}
 \titlegraphic{\raggedleft\vfill\includegraphics[width=6cm]{images/Goblint car with C-3PO-presentation2.png}}
 \institute{\includegraphics[width=1.5cm]{images/tum-black.pdf}}
 
@@ -20,65 +20,75 @@
 \begin{frame}{\cpo{}: A Weakly-Relational Pointer Analysis for Goblint}
 
 
-    \begin{minipage}{0.49\textwidth}
         \textbf{\cpo{}}: C analysis based on 2-Pointer Logic, introduced by Helmut Seidl,
         Julian Erhard,
         Michael Schwarz,
         Sarah Tilscher~\cite{2pointer}
-    \end{minipage}
-    \begin{minipage}{0.49\textwidth}
-        \includegraphics[width=6cm]{images/Goblint car with C-3PO-presentation3.png}
-    \end{minipage}
+
 
     \[
         (\&x = \&y) \land (x \neq *(1 + A))
-        \]
+    \]
 
 \end{frame}
 
 
+\begin{frame}[fragile,containsverbatim]{Example}
+
+
+        \begin{minted}{C}
+if(x != 64 + start){
+    error();
+} else if (*(y+1) == x) {
+    success();
+}
+\end{minted}
+
+\end{frame}
 
 \frame{\tableofcontents}
 
 \section{Abstract Domain}
 
 
-\begin{frame}{2-Pointer Logic}
+\begin{frame}{Terms considered by 2-Pointer Logic}
     \begin{itemize}
         \item Atoms: auxiliaries $A$ and address constants $\&x$
-        \pause
+              \pause
         \item Terms: atoms + address arithmetic + dereferencing
+        \[
+            t\,{::=}\,A \mid \&x \mid *(z+t)
+        \]
         \pause
-        \item Propositions:
-         \begin{itemize}
-            \item Quantitative equalities
-            \[
-                (\&x = \&y) \land (x = 1 + A)
-            \]
-            \pause
-      \item Quantitative disequalities (which terms are not modified by an assignment?)
-            \[
-                (x \neq 4 - y)
-            \]
-            \pause
+        \item $x$ abbreviation for $*(0 + \&x)$ and $*t$ for $*(0+t)$
 
-      \item Block disequalities (which terms are not in the same C object?)
-            \[
-                (bl(y) \neq bl(A))
-            \]
-        \end{itemize}
     \end{itemize}
 \end{frame}
 
-\begin{frame}{Abstract Domain}
+\begin{frame}{Propositions considered by 2-Pointer Logic}
     \begin{itemize}
+        \item Propositions:
+\begin{itemize}
+    \item Quantitative equalities
+          \[
+              t_1=z+t_2
+          \]
+          \pause
+    \item Quantitative disequalities
+          \[
+              t_1\neq z+t_2
+          \]
+          \pause
 
-        \item Conjunction $\Psi$ of equalities, quantitative disequalities and block disequalities
-        \item Partial order: semantic implication:
-        \[
-        \Psi \rightarrow \Psi' \quad\Rightarrow\quad  \Psi \leq \Psi'
-        \]
-
+    \item Block disequalities
+          \[
+              bl(t_1) \neq bl(t_2)
+          \]
+\end{itemize}
+\item Partial order: semantic implication:
+              \[
+                  \Psi \rightarrow \Psi' \quad\Rightarrow\quad  \Psi \leq \Psi'
+              \]
     \end{itemize}
 \end{frame}
 
@@ -88,7 +98,7 @@
     \]
     \[
         (\&x = \&y) \land (x = 1 + A)
-        \]
+    \]
     \centering
     \begin{tikzpicture}[shorten >=1pt, node distance=5cm, on grid, auto, state/.style={rectangle, rounded corners, draw, inner sep=5pt, align=center}]
 
@@ -111,7 +121,7 @@
     \]
     \[
         (\&x = \&y) \land (x = 1 + A)
-        \]
+    \]
     \centering
     \begin{tikzpicture}[shorten >=1pt, node distance=5cm, on grid, auto, state/.style={rectangle, rounded corners, draw, inner sep=5pt, align=center}]
 
@@ -158,45 +168,32 @@
 
 \end{frame}
 
-\begin{frame}[fragile,containsverbatim]{Block Disequalities}
-    \begin{itemize}
-        \item Stored as a map: terms $\rightarrow$ terms that are in a different block
-        \pause
-        \item For all variables $x$ and $y$:
-              \[
-                  bl(\&x) \neq bl(\&y)
-              \]
-        \pause
-        \item
-              \begin{minted}{C}
-int *x = malloc();
-int *y = malloc();
-\end{minted}
-
-              \[
-                  bl(x) \neq bl(y)
-              \]
-
-    \end{itemize}
-\end{frame}
-
 \begin{frame}[fragile,containsverbatim]{Quantitative Disequalities}
     \begin{itemize}
         \item Deriving from block disequalities:
               \[
-                bl(t_1) \neq bl(t_2) \quad\Rightarrow\quad  t_1\neq z+ t_2 \quad\quad \text{for each $z \in \Z$}
+                  bl(t_1) \neq bl(t_2) \quad\Rightarrow\quad  t_1\neq z+ t_2 \quad\quad \text{for each $z \in \Z$}
               \]
               \pause
         \item Deriving from equalities:
               \[
-               t_1 = z + t_2  \quad\Rightarrow\quad t_1\neq z' + t_2 \quad\quad \text{for each $z' \neq z$}
+                  t_1 = z + t_2  \quad\Rightarrow\quad t_1\neq z' + t_2 \quad\quad \text{for each $z' \neq z$}
               \]
-\pause
+              \pause
         \item Deriving from guards:
-              \begin{minted}{C}
-            if(*x != 4 + y){...}
+
+        \begin{minipage}{0.4\textwidth}
+\begin{minted}{C}
+        if(*x != 4 + y){...}
 \end{minted}
-\pause
+\end{minipage}
+\begin{minipage}{0.45\textwidth}
+\[
+    \quad\Rightarrow\quad *x\neq 4 + y
+\]
+\end{minipage}
+
+              \pause
         \item Deriving from other disequalities:
               \[ *(z_1 + t_1) \neq *(z_2 + t_2) \quad\Rightarrow\quad z_1 + t_1 \neq z_2 + t_2
               \]
@@ -207,45 +204,40 @@ int *y = malloc();
 \begin{frame}{Meet}
     \begin{itemize}
 
-        \item Greatest lower bound of $\Psi$ and $\Psi'$ = $\Psi \land \Psi'$
-        \pause
+        \item Greatest lower bound of $\Psi$ and $\Psi'$ $\rightarrow$ $\Psi \land \Psi'$
+              \pause
         \item Add equalities to QFA
-        \pause
-        \item Add block/quantitative disequalities to map
-        \pause
+              \pause
+        \item Add block/quantitative disequalities
+              \pause
         \item Closure of disequalities
     \end{itemize}
 \end{frame}
 
-\begin{frame}{When is the Meet Unsatisfiable?}
-    \begin{itemize}
-\pause
-        \item $t_1 = z + t_2$, and $t_1 = z' + t_2$, but $z\neq z'$
-        \pause
-     \item $t_1 = z + t_2$, and $t_1 \neq z + t_2$
-     \pause
-     \item $t_1 = z + t_2$, and $bl(t_1) \neq bl(t_2)$
 
+\section{Join}
+\begin{frame}{Join}
+    \begin{itemize}
+        \item Least upper bound of $\Psi$ and $\Psi'$ $\rightarrow$ $\Psi \lor \Psi'$
+              \pause
+        \item Not always representable as a finite conjunction~\cite{join}
 
     \end{itemize}
 \end{frame}
 
-\section{Join}
-\begin{frame}{Join}
-\begin{itemize}
-    \item Least upper bound of $\Psi$ and $\Psi'$ = $\Psi \lor \Psi'$
-    \pause
-    \item Not always representable as a finite conjunction~\cite{join}
-    \pause
-    \item Join of two QFAs $M_1 \join M_2$: Group terms by their
+\begin{frame}{Join of two QFAs $M_1 \join M_2$:}
     \begin{itemize}
-    \item Equiv. class of $M_1$
-    \item Equiv. class of $M_2$
-    \item Same distance in $M_1$ and $M_2$
+        \item Add terms to $M_1$ and $M_2$ to bring them to the same set of terms
+        \pause
+        \item Group terms by their
+              \begin{itemize}
+                  \item Equivalence class of $M_1$
+                  \item Equivalence class of $M_2$
+                  \item Same distance in $M_1$ and $M_2$
+              \end{itemize}
+              \pause
+        \item[$\rightarrow$] product automaton with offset
     \end{itemize}
-    \pause
-    \item[$\rightarrow$] product automaton with offset
-\end{itemize}
 \end{frame}
 
 \begin{frame}{Join: Group by Offset}
@@ -294,6 +286,345 @@ int *y = malloc();
         \end{tikzpicture}
     \end{minipage}
 \end{frame}
+
+\section{Widening and Narrowing}
+\begin{frame}{Widening and Narrowing}
+
+    \begin{itemize}
+        \item Limit the terms of the result to the set of terms of the first element
+    \end{itemize}
+    %\[\Psi_1 \widen \Psi_2 = \restr{(\Psi_1 \join \Psi_2)}{\T_1}.\]
+    %\[\Psi_1 \narrow \Psi_2 = \restr{(\Psi_1 \meet \Psi_2)}{\T_1}.\]
+    \begin{itemize}
+        \pause
+        \item Limit the possible offsets
+              appearing in disequalities
+    \end{itemize}
+
+\end{frame}
+
+\section{Assignment}
+
+\begin{frame}{Assignment to an Unknown Expression}
+    \[
+        t_1\,{:=}\,?
+    \]
+    \begin{itemize}
+        \item Forget all terms that may be modified $\rightarrow$ terms with the same address as $t_1$
+              \pause
+        \item If $t_1 = A$ or $t_1 = \&x$: remove terms that have $t_1$ as subterm
+              \pause
+        \item If $t_1 = *(z + t)$: keep only terms $*(z' + v)$ where
+              \begin{itemize}
+                  \item can infer $z + t \neq z' + v$ %or $bl(t) \neq bl(v)$
+                        % \item $t = z_1 + v$ and $z_1 \neq (z' - z)$ %and they do not overlap
+                  \item use non-relational analysis: possible values of $z + t$ and $z' + v$ do not intersect
+              \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Assignment to a Term with an Offset}
+    \[
+        t_1\,{:=}\,z + t
+    \]
+    \begin{itemize}
+        \item Fresh auxiliary $A$
+        \item Add equality $A = z + t$
+        \item Remove terms modified by an assignment to $t_1$
+        \item Add equality $t_1 = A$
+        \item Remove $A$
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Dynamic Memory Allocation}
+    \[
+        t_1\,{:=}\,\malloc
+    \]
+    \begin{itemize}
+        \pause
+        \item Remove terms modified by an assignment to $t_1$
+              \pause
+        \item For each $t \in \T$, add:
+              \[
+                  bl(t) \neq bl(t_1)
+              \]
+    \end{itemize}
+\end{frame}
+
+\section{Evaluation}
+
+\begin{frame}{Precision Test Suite}
+    \begin{itemize}
+        \item GNU Core Utilities (Coreutils), automatically annotated invariants by \cpo\
+              \pause
+        \item Compared three different \goblint\ analyses:
+              \begin{itemize}
+                  \item \base{}: basic \goblint\ analysis, including a non-relational pointer analysis
+                  \item \vareq{}: tracks must-equalities between general expressions
+                  \item \cpo\
+              \end{itemize}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Coreutils Test Results}
+    \centering
+
+    \begin{tikzpicture}
+        \begin{axis}[
+                ybar,
+                symbolic x coords={\base, \vareq, \cpo},
+                xtick=data,
+                ymin=0, ymax=19488,
+                bar width=1cm,
+                ylabel={Number of Proven Assertions},
+                xlabel={Analyses},
+                scaled y ticks=false,
+                %ytick={0,5000,10000,15000},
+                %yticklabels={0,{5,000},{10,000},{15,000}},
+                nodes near coords,
+                nodes near coords align={vertical},
+            ]
+            \addplot coordinates {(\base, 4636) (\vareq, 8188) (\cpo, 19488)};
+        \end{axis}
+    \end{tikzpicture}
+
+\end{frame}
+
+
+\begin{frame}{Performance: SV-Comp Results}
+    \centering
+
+    \begin{tikzpicture}
+        % Load the picture
+        \node[anchor=south west,inner sep=0] (image) at (0,0) {\includegraphics[width=10cm]{images/base-vs-cpo4-cropped.png}};
+
+        % Overlaying axes with logarithmic scales
+        \begin{axis}[
+                width=11.57cm, % Match the width of the image
+                height=6cm, % Adjust as needed
+                at={(image.south west)}, % Position the axis on the image
+                anchor=south west, % Anchors the axis to the southwest corner of the image
+                axis on top, % Ensure the axes are drawn on top of the image
+                xmin=1, xmax=900, % Define the x-axis limits
+                ymin=1, ymax=900, % Define the y-axis limits
+                xmode=log, % Logarithmic x-axis
+                ymode=log, % Logarithmic y-axis
+                xlabel={\base}, % X-axis label
+                ylabel={\cpo}, % Y-axis label
+                xtick={1,10,100,900}, % X-axis ticks in logarithmic scale
+                ytick={1,10,100,900}, % Y-axis ticks in logarithmic scale
+                xticklabels={0, 10, 100, 900}, % Custom x-axis labels
+                yticklabels={0, 10, 100, 900}, % Custom y-axis labels
+                grid=none, % Show the grid for better visualization
+                minor tick num=9, % Number of minor ticks between major ticks
+            ]
+
+            \addplot[domain=1:900, samples=100, thick, TUMBlue!60] {x};
+
+        \addplot[domain=1:900, samples=100, TUMBlue!60] {2.35*x};
+
+        \addplot[domain=1:900, samples=100, TUMBlue!60] {0.43*x};
+
+        \end{axis}
+
+    \end{tikzpicture}
+\end{frame}
+
+\begin{frame}{Related Work}
+    \begin{itemize}
+        \item non-relational pointer analysis
+        \[
+        p \mapsto \{ \&malloc_1, \&y \}
+        \]
+        \begin{itemize}
+            \item fast flow- and context-insensitive \cite{Steensgaard,Andersen}
+            \item flow- and context-sensitive (Mopsa~\cite{mopsa},
+            Frama-C~\cite{framac}, \goblint~\cite{goblint})
+        \end{itemize}
+        \pause
+        \item very precise shape analysis, e.g., separation logic~\cite{separationlogic,rivalpapers}
+        \[
+             \{(x + 4 \mapsto 4)\ast ((x\mapsto 42){-\!\!*}P)\}
+        \]
+
+    \end{itemize}
+\end{frame}
+
+\section{Conclusion}
+
+\begin{frame}{Conclusion}
+    \begin{itemize}
+        \item \cpo\ can infer equalities and disequalities between two pointer expressions % that were out of reach for other goblint analyses
+        \pause
+        \item Implemented meet and (approximation of) join
+        \pause
+        \item Widening and narrowing for termination
+        \pause
+        \item Increase precision by cooperating with non-relational analysis
+        \pause
+        \item Future work: track null pointers/undefined pointers
+    \end{itemize}
+    %was haben wir gelernt, ist sie geeignet, was sind die vorteile
+    %man kann auch unsere analyse benutzen um zu wissen, ob sachen bei einem assignment überschrieben werden, so wie wir die non-relational pointer analyse benutzen
+\end{frame}
+
+\begin{frame}
+    \centering
+\huge
+       \textbf{Thank you for listening}
+
+
+\includegraphics[width=6cm]{images/Goblint car with C-3PO-presentation3.png}
+\end{frame}
+
+\appendix
+
+ \begin{frame}[allowframebreaks]
+     \frametitle{References}
+     \bibliographystyle{amsalpha}
+     \bibliography{main.bib}
+ \end{frame}
+
+
+\begin{frame}{Two-dimensional Memory Model}
+    \begin{itemize}
+        \item In C: pointer arithmetic is not allowed to go outside the current memory object
+        \item Address: (blockID, offset)
+        \item $bl(a,b) = a$
+
+    \end{itemize}
+    \begin{tikzpicture}
+
+        \def\blockheight{0.8}
+        \def\startx{0}
+
+        \draw (\startx, 0) rectangle (\startx + 3, -\blockheight);
+        \node[anchor=west] at (\startx, -0.5*\blockheight) {int x};
+        \draw (\startx, -\blockheight) rectangle (\startx + 5, -2*\blockheight);
+        \node[anchor=west] at (\startx, -1.5*\blockheight) {struct a};
+        \draw (\startx, -2*\blockheight) rectangle (\startx + 7, -3*\blockheight);
+        \node[anchor=west] at (\startx, -2.5*\blockheight) {int a[5]};
+        \draw (\startx, -3*\blockheight) rectangle (\startx + 9, -4*\blockheight);
+        \node[anchor=west] at (\startx, -3.5*\blockheight) {malloc\#001};
+
+        \draw[->] (\startx,  -4*\blockheight) -- (\startx + 10, -4*\blockheight) node[anchor=north] {Offset};
+        \draw[->] (\startx,  -4*\blockheight) -- (\startx, \blockheight) node[anchor=south, rotate=90] {BlockID};
+
+        \node[anchor=east] at (\startx, -1*\blockheight) {3};
+        \node[anchor=east] at (\startx, -2*\blockheight) {2};
+        \node[anchor=east] at (\startx, -3*\blockheight) {1};
+        \node[anchor=east] at (\startx, -4*\blockheight) {0};
+
+        \foreach \x in {0, 2, 4, 6, 8} {
+                \draw (\startx + \x, -4*\blockheight) -- (\startx + \x, -4*\blockheight);
+                \node[anchor=north] at (\startx + \x, -4*\blockheight) {\x};
+            }
+
+    \end{tikzpicture}
+\end{frame}
+
+\begin{frame}{Representation of structs and arrays}
+    \begin{itemize}
+        \item $a[1]\equiv *(a+1)$
+        \item $a[i][j] \equiv (a + (i \cdot m + j) \cdot 32) \quad \text{for \texttt{int a[n][m]}}$
+        \item struct $s$: $s.f \equiv *(\&s + 32)$
+    \end{itemize}
+\end{frame}
+
+
+
+\begin{frame}{When is the Meet Unsatisfiable?}
+    \begin{itemize}
+
+        \item $t_1 = z + t_2$, and $t_1 = z' + t_2$, but $z\neq z'$
+
+        \item $t_1 = z + t_2$, and $t_1 \neq z + t_2$
+
+        \item $t_1 = z + t_2$, and $bl(t_1) \neq bl(t_2)$
+
+
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}{Not Finitely Representable Join}
+    \begin{itemize}
+        \item It is not always possible to calculate the join
+    \end{itemize}
+
+    \[
+        (A = V)
+    \]
+
+    \[
+        (*A = A)\land (*V=V) \land (*(1 + A) = *(1 + V))
+    \]
+    \begin{itemize}
+        \item Join:
+    \end{itemize}
+    \[
+        *(1+*^n A) = *(1 + *^n V)\quad\quad\text{ for each $n \geq 0$}
+    \]
+\end{frame}
+
+% \begin{frame}{Interprocedural}
+%     enter:
+%     \begin{itemize}
+%         \item Remove local variables of caller.
+%         \item Add shadow variable $p'$ for each parameter $p$ and the equality $p = p'$.
+%     \end{itemize}
+%     combine:
+%     \begin{itemize}
+%         \item Remove tainted variables from caller state.
+%         \item Meet caller and callee state.
+%         \item Add equality $p' = e$ for each parameter $p$ called with the expression $e$.
+%         \item Assign return value to variable if necessary.
+%         \item Remove local variables of callee and shadow variables.
+%     \end{itemize}
+% \end{frame}
+
+\begin{frame}{Not Finitely Representable Join}
+    \begin{minipage}{0.45\textwidth}
+        \centering
+        \begin{tikzpicture}[shorten >=1pt, node distance=3cm, on grid, auto, state/.style={rectangle, rounded corners, draw, inner sep=5pt, align=center}]
+
+            \node[state] (Q1) {$\begin{array}{c}
+                        A=V
+                    \end{array}$};
+            \node [left=1.5cm of Q1] {$\boldsymbol{M_1}$};
+        \end{tikzpicture}
+
+    \end{minipage}
+    \begin{minipage}{0.45\textwidth}
+
+        \begin{tikzpicture}[shorten >=1pt, node distance=3cm, on grid, auto, state/.style={rectangle, rounded corners, draw, inner sep=5pt, align=center}]
+
+            \node[state] (Q1) {$\begin{array}{c}
+                        A=*A=..
+                    \end{array}$};
+
+            \node[state, right=3cm of Q1] (Q2) {$\begin{array}{c}
+                        V=*V=..
+                    \end{array}$};
+
+            \node[state, below right=2cm and 1.5cm of Q1] (Q3) {$\begin{array}{c}
+                        *(1+A)= *(1 + V),...
+                    \end{array}$};
+
+            \path[->]
+            (Q1) edge[loop below] node[left] {$0$} (Q1)
+            (Q2) edge[loop below] node[right] {$0$} (Q2)
+            (Q1) edge[] node[right] {$1$} (Q3)
+            (Q2) edge[] node[above left] {$1$} (Q3);
+
+            \node [below left=1cm and 1.7cm of Q1] {$\boldsymbol{M_2}$};
+
+        \end{tikzpicture}
+    \end{minipage}
+
+\end{frame}
+
+
 
 \begin{frame}{Join: Product Automaton}
     \[
@@ -405,267 +736,96 @@ int *y = malloc();
     \end{tikzpicture}
 \end{frame}
 
-\section{Widening and Narrowing}
-\begin{frame}{Widening and Narrowing}
-
+\begin{frame}{Infinite ascending/descending chains}
     \begin{itemize}
-        \item Limit the terms of the result to the set of terms of the first element
-    \end{itemize}
-    %\[\Psi_1 \widen \Psi_2 = \restr{(\Psi_1 \join \Psi_2)}{\T_1}.\]
-    %\[\Psi_1 \narrow \Psi_2 = \restr{(\Psi_1 \meet \Psi_2)}{\T_1}.\]
-    \begin{itemize}
-\pause
-        \item Limit the possible offsets
-              appearing in disequalities
-    \end{itemize}
-
-\end{frame}
-
-\section{Assignment}
-
-\begin{frame}{Assignment to an Unknown Expression}
-    \[
-        t_1\,{:=}\,?
-    \]
-    \begin{itemize}
-        \item Forget all terms that may be modfied $\rightarrow$ terms with the same address as $t_1$
-        \pause
-        \item If $t_1 = A$ or $t_1 = \&x$: remove terms that have $t_1$ as subterm
-        \pause
-        \item If $t_1 = *(z + t)$: keep only terms $*(z' + v)$ where
-              \begin{itemize}
-                \item can infer $z + t \neq z' + v$ %or $bl(t) \neq bl(v)$
-                 % \item $t = z_1 + v$ and $z_1 \neq (z' - z)$ %and they do not overlap
-                  \item use non-relational analysis: possible values of $z + t$ and $z' + v$ do not intersect
-              \end{itemize}
-    \end{itemize}
-\end{frame}
-
-\begin{frame}{Assignment to a Term with an Offset}
-    \[
-        t_1\,{:=}\,z + t
-    \]
-    \begin{itemize}
-        \item Fresh auxiliary $A$
-        \item Add equality $A = z + t$
-        \item Remove terms modified by an assignment to $t_1$
-        \item Add equality $t_1 = A$
-        \item Remove $A$
-    \end{itemize}
-\end{frame}
-
-\begin{frame}{Dynamic Memory Allocation}
-    \[
-        t_1\,{:=}\,\malloc
-    \]
-    \begin{itemize}
-        \pause
-        \item Remove terms modified by an assignment to $t_1$
-\pause
-        \item For each $t \in \T$, add:
-              \[
-                  bl(t) \neq bl(t_1)
-              \]
-    \end{itemize}
-\end{frame}
-
-\section{Evaluation}
-
-\begin{frame}{Precision Test Suite}
-    \begin{itemize}
-        \item 29 litmus tests, manually annotated invariants
-        \pause
-        \item GNU Core Utilities (Coreutils), automatically annotated invariants by \cpo\
-        \pause
-        \item Compared three different \goblint\ analyses:
-              \begin{itemize}
-                  \item \base{}: basic goblint analysis, including a non-relational pointer analysis
-                  \item \vareq{}: tracks must-equalities between general expressions
-                  \item \cpo\
-              \end{itemize}
-    \end{itemize}
-\end{frame}
-
-
-\begin{frame}{Litmus Test Results}
-    \centering
-
-    \begin{tikzpicture}
-        \begin{axis}[
-                ybar,
-                symbolic x coords={\base, \vareq, \cpo},
-                xtick=data,
-                ymin=0, ymax=109,
-                bar width=1cm,
-                ylabel={Number of Proven Assertions},
-                xlabel={Analyses},
-                nodes near coords,
-                nodes near coords align={vertical},
-            ]
-            \addplot coordinates {(\base, 17) (\vareq, 23) (\cpo, 109)};
-        \end{axis}
-    \end{tikzpicture}
-
-\end{frame}
-
-\begin{frame}{Coreutils Test Results}
-    \centering
-
-    \begin{tikzpicture}
-        \begin{axis}[
-                ybar,
-                symbolic x coords={\base, \vareq, \cpo},
-                xtick=data,
-                ymin=0, ymax=19488,
-                bar width=1cm,
-                ylabel={Number of Proven Assertions},
-                xlabel={Analyses},
-                nodes near coords,
-                nodes near coords align={vertical},
-            ]
-            \addplot coordinates {(\base, 4636) (\vareq, 8188) (\cpo, 19488)};
-        \end{axis}
-    \end{tikzpicture}
-
-\end{frame}
-
-\begin{frame}{Performance Experiments}
-    \begin{itemize}
-        \item Compared efficiency of \goblint\ with \cpo\ and without (\base)
-        \item SV-Comp: large set of verification tasks used for software competition
-        \pause
-        \item 95\% have less than 3x slowdown
-        \pause
-        \item Few additional passed tests; some additional timeouts
-    \end{itemize}
-\end{frame}
-
-\begin{frame}{SV-Comp Results}
-    \centering
-
-\begin{tikzpicture}
-    % Load the picture
-    \node[anchor=south west,inner sep=0] (image) at (0,0) {\includegraphics[width=10cm]{images/base-vs-cpo4-cropped.png}};
-
-    % Overlaying axes with logarithmic scales
-    \begin{axis}[
-        width=11.55cm, % Match the width of the image
-        height=6cm, % Adjust as needed
-        at={(image.south west)}, % Position the axis on the image
-        anchor=south west, % Anchors the axis to the southwest corner of the image
-        axis on top, % Ensure the axes are drawn on top of the image
-        xmin=1, xmax=900, % Define the x-axis limits
-        ymin=1, ymax=900, % Define the y-axis limits
-        xmode=log, % Logarithmic x-axis
-        ymode=log, % Logarithmic y-axis
-        xlabel={\base}, % X-axis label
-        ylabel={\cpo}, % Y-axis label
-        xtick={1,10,100,900}, % X-axis ticks in logarithmic scale
-        ytick={1,10,100,900}, % Y-axis ticks in logarithmic scale
-        xticklabels={0, 10, 100, 900}, % Custom x-axis labels
-        yticklabels={0, 10, 100, 900}, % Custom y-axis labels
-        grid=none, % Show the grid for better visualization
-        minor tick num=9, % Number of minor ticks between major ticks
-    ]
-    \end{axis}
-
-\end{tikzpicture}
-\end{frame}
-
-\begin{frame}{Related Work}
-    \begin{itemize}
-        \item TODO
-    \end{itemize}
-    %was haben wir gelernt, ist sie geeignet, was sind die vorteile
-    %man kann auch unsere analyse benutzen um zu wissen, ob sachen bei einem assignment überschrieben werden, so wie wir die non-relational pointer analyse benutzen
-\end{frame}
-
-\section{Conclusion}
-
-\begin{frame}{Conclusion}
-    \begin{itemize}
-        \item TODO
-        \item \cpo\ can find additional invariants to current \goblint\ analyses
-        \item Increase precision by cooperating with non-relational analysis
-        \item Find relational properties with relatively smaller overhead by considering only two terms
-    \end{itemize}
-    %was haben wir gelernt, ist sie geeignet, was sind die vorteile
-    %man kann auch unsere analyse benutzen um zu wissen, ob sachen bei einem assignment überschrieben werden, so wie wir die non-relational pointer analyse benutzen
-\end{frame}
-
-\appendix
-
-\begin{frame}[allowframebreaks]
-    \frametitle{References}
-    \bibliographystyle{amsalpha}
-    \bibliography{main.bib}
-\end{frame}
-
-
-\begin{frame}{Two-dimensional Memory Model}
-    \begin{itemize}
-        \item In C: pointer arithmetic is not allowed to go outside the current memory object
-        \item Address: (blockID, offset)
-        \item $bl(a,b) = a$
-
-    \end{itemize}
-    \begin{tikzpicture}
-
-        \def\blockheight{0.8}
-        \def\startx{0}
-
-        \draw (\startx, 0) rectangle (\startx + 3, -\blockheight);
-        \node[anchor=west] at (\startx, -0.5*\blockheight) {int x};
-        \draw (\startx, -\blockheight) rectangle (\startx + 5, -2*\blockheight);
-        \node[anchor=west] at (\startx, -1.5*\blockheight) {struct a};
-        \draw (\startx, -2*\blockheight) rectangle (\startx + 7, -3*\blockheight);
-        \node[anchor=west] at (\startx, -2.5*\blockheight) {int a[5]};
-        \draw (\startx, -3*\blockheight) rectangle (\startx + 9, -4*\blockheight);
-        \node[anchor=west] at (\startx, -3.5*\blockheight) {malloc\#001};
-
-        \draw[->] (\startx,  -4*\blockheight) -- (\startx + 10, -4*\blockheight) node[anchor=north] {Offset};
-        \draw[->] (\startx,  -4*\blockheight) -- (\startx, \blockheight) node[anchor=south, rotate=90] {BlockID};
-
-        \node[anchor=east] at (\startx, -1*\blockheight) {3};
-        \node[anchor=east] at (\startx, -2*\blockheight) {2};
-        \node[anchor=east] at (\startx, -3*\blockheight) {1};
-        \node[anchor=east] at (\startx, -4*\blockheight) {0};
-
-        \foreach \x in {0, 2, 4, 6, 8} {
-                \draw (\startx + \x, -4*\blockheight) -- (\startx + \x, -4*\blockheight);
-                \node[anchor=north] at (\startx + \x, -4*\blockheight) {\x};
-            }
-
-    \end{tikzpicture}
-\end{frame}
-
-\begin{frame}{Representation of structs and arrays}
-    \begin{itemize}
-        \item $a[1]\equiv *(a+1)$
-        \item $a[i][j] \equiv (a + (i \cdot m + j) \cdot 32) \quad \text{for \texttt{int a[n][m]}}$
-        \item struct $s$: $s.f \equiv *(\&s + 32)$
-    \end{itemize}
-\end{frame}
-
-\begin{frame}{Join}
-    \begin{itemize}
-        \item It is not always possible to calculate the join
-    \end{itemize}
-
-    \[
-        (A = V)
-    \]
-
-    \[
-        (*A = A)\land (*V=V) \land (*(1 + A) = *(1 + V))
-    \]
-    \begin{itemize}
-        \item Join:
+        \item Infinite strictly ascending chain:
     \end{itemize}
     \[
-        *(1+*^n A) = *(1 + *^n V)\quad\quad\text{ for each $n \geq 0$}
+        \Psi_n \equiv (*^{2^n} \&x = \&x)\hspace{6pt} (n\geq 0).
+    \]
+    \begin{itemize}
+        \item Infinite strictly descending chains:
+    \end{itemize}
+    \[
+        \Phi_n \equiv\bigwedge_{i=1}^n (\&y = *(i+\&x))\qquad(n\geq 0)
+    \]
+    \[
+        \Psi_n \equiv (y\neq n+\&x)\qquad(n\geq 0)
     \]
 \end{frame}
+
+
+% \begin{frame}[fragile,containsverbatim]{Example}
+%     %(etwas was goblint noch nicht konnte auch nicht mit var eq
+%     %-> running example)
+%     \begin{minipage}{0.49\textwidth}
+
+%         \begin{tikzpicture}
+
+%             % Settings
+%             \def\blockheight{0.8}
+%             \def\blockwidth{3.5}
+
+%             % Memory blocks and addresses
+%             \foreach \i/\label in {0/malloc1, 1/free1, 2/malloc2, 3/free2, 4/malloc3, 5/free3, 6/malloc4, 7/free4} {
+%                     % Draw memory block
+%                     \draw (0, -\i*\blockheight) rectangle (\blockwidth, -\i*\blockheight - \blockheight);
+%                     % Label the memory block
+%                     \node at (\blockwidth/2, -\i*\blockheight - \blockheight/2) {\label};
+%                     % Print address to the right
+%                     \node[above right=0.1cm and 0cm] at (\blockwidth, -\i*\blockheight - \blockheight/2) {\texttt{\the\numexpr 4*\i \relax}};
+%                 }
+%         \end{tikzpicture}
+%     \end{minipage}
+%     \begin{minipage}{0.49\textwidth}
+
+%         \begin{minted}{C}
+% ...
+% p = (*malloc)();
+% ...
+% (*free)(p);
+% ...
+% \end{minted}
+%         \only<2>{\alert{$\rightarrow$ $free = 4 + malloc$?}}
+%     \end{minipage}
+% \end{frame}
+
+
+
+% \begin{frame}{Litmus Test Results}
+%     \begin{itemize}
+%         \item 29 litmus tests, manually annotated invariants
+%     \end{itemize}
+%     \centering
+
+%     \begin{tikzpicture}
+%         \begin{axis}[
+%                 ybar,
+%                 symbolic x coords={\base, \vareq, \cpo},
+%                 xtick=data,
+%                 ymin=0, ymax=109,
+%                 bar width=1cm,
+%                 ylabel={Number of Proven Assertions},
+%                 xlabel={Analyses},
+%                 nodes near coords,
+%                 nodes near coords align={vertical},
+%             ]
+%             \addplot coordinates {(\base, 17) (\vareq, 23) (\cpo, 109)};
+%         \end{axis}
+%     \end{tikzpicture}
+
+% \end{frame}
+
+% \begin{frame}{Performance Experiments}
+%     \begin{itemize}
+%         \item Compared efficiency of \goblint\ with \cpo\ and without (\base)
+%         \item SV-Comp: large set of verification tasks used for software competition
+
+%         \item 95\% have less than 3x slowdown
+
+%         \item Few additional passed tests; some additional timeouts
+%     \end{itemize}
+% \end{frame}
 
 \begin{frame}{Overlapping values}
 
@@ -701,116 +861,5 @@ int *y = malloc();
     \end{itemize}
 
 \end{frame}
-
-\begin{frame}{Infinite ascending/descending chains}
-    \begin{itemize}
-        \item Infinite strictly ascending chain:
-    \end{itemize}
-    \[
-        \Psi_n \equiv (*^{2^n} \&x = \&x)\hspace{6pt} (n\geq 0).
-    \]
-    \begin{itemize}
-        \item Infinite strictly descending chains:
-    \end{itemize}
-    \[
-        \Phi_n \equiv\bigwedge_{i=1}^n (\&y = *(i+\&x))\qquad(n\geq 0)
-    \]
-    \[
-        \Psi_n \equiv (y\neq n+\&x)\qquad(n\geq 0)
-    \]
-\end{frame}
-
-\begin{frame}{Interprocedural}
-    enter:
-    \begin{itemize}
-        \item Remove local variables of caller.
-        \item Add shadow variable $p'$ for each parameter $p$ and the equality $p = p'$.
-    \end{itemize}
-    combine:
-    \begin{itemize}
-        \item Remove tainted variables from caller state.
-        \item Meet caller and callee state.
-        \item Add equality $p' = e$ for each parameter $p$ called with the expression $e$.
-        \item Assign return value to variable if necessary.
-        \item Remove local variables of callee and shadow variables.
-    \end{itemize}
-\end{frame}
-
-\begin{frame}{Not finitely representable join}
-    \begin{minipage}{0.45\textwidth}
-        \centering
-        \begin{tikzpicture}[shorten >=1pt, node distance=3cm, on grid, auto, state/.style={rectangle, rounded corners, draw, inner sep=5pt, align=center}]
-
-            \node[state] (Q1) {$\begin{array}{c}
-                        A=V
-                    \end{array}$};
-            \node [left=1.5cm of Q1] {$\boldsymbol{M_1}$};
-        \end{tikzpicture}
-
-    \end{minipage}
-            \begin{minipage}{0.45\textwidth}
-
-        \begin{tikzpicture}[shorten >=1pt, node distance=3cm, on grid, auto, state/.style={rectangle, rounded corners, draw, inner sep=5pt, align=center}]
-
-            \node[state] (Q1) {$\begin{array}{c}
-                        A=*A=..
-                    \end{array}$};
-
-            \node[state, right=3cm of Q1] (Q2) {$\begin{array}{c}
-                        V=*V=..
-                    \end{array}$};
-
-            \node[state, below right=2cm and 1.5cm of Q1] (Q3) {$\begin{array}{c}
-                        *(1+A)= *(1 + V),...
-                    \end{array}$};
-
-            \path[->]
-            (Q1) edge[loop below] node[left] {$0$} (Q1)
-            (Q2) edge[loop below] node[right] {$0$} (Q2)
-            (Q1) edge[] node[right] {$1$} (Q3)
-            (Q2) edge[] node[above left] {$1$} (Q3);
-
-            \node [below left=1cm and 1.7cm of Q1] {$\boldsymbol{M_2}$};
-
-        \end{tikzpicture}
-    \end{minipage}
-
-\end{frame}
-
-\begin{frame}[fragile,containsverbatim]{Example}
-    %(etwas was goblint noch nicht konnte auch nicht mit var eq
-    %-> running example)
-    \begin{minipage}{0.49\textwidth}
-
-        \begin{tikzpicture}
-
-            % Settings
-            \def\blockheight{0.8}
-            \def\blockwidth{3.5}
-
-            % Memory blocks and addresses
-            \foreach \i/\label in {0/malloc1, 1/free1, 2/malloc2, 3/free2, 4/malloc3, 5/free3, 6/malloc4, 7/free4} {
-                    % Draw memory block
-                    \draw (0, -\i*\blockheight) rectangle (\blockwidth, -\i*\blockheight - \blockheight);
-                    % Label the memory block
-                    \node at (\blockwidth/2, -\i*\blockheight - \blockheight/2) {\label};
-                    % Print address to the right
-                    \node[above right=0.1cm and 0cm] at (\blockwidth, -\i*\blockheight - \blockheight/2) {\texttt{\the\numexpr 4*\i \relax}};
-                }
-        \end{tikzpicture}
-    \end{minipage}
-    \begin{minipage}{0.49\textwidth}
-
-        \begin{minted}{C}
-...
-p = (*malloc)();
-...
-(*free)(p);
-...
-\end{minted}
-        \only<2>{\alert{$\rightarrow$ $free = 4 + malloc$?}}
-    \end{minipage}
-\end{frame}
-
 
 \end{document}
