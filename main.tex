@@ -39,14 +39,13 @@
         \begin{minted}{C}
 if(x != 64 + start){
     error();
-} else if (*(y+1) == x) {
+}
+if (*(y+1) == x) {
     success();
 }
 \end{minted}
 
 \end{frame}
-
-\frame{\tableofcontents}
 
 \section{Abstract Domain}
 
@@ -55,13 +54,12 @@ if(x != 64 + start){
     \begin{itemize}
         \item Atoms: auxiliaries $A$ and address constants $\&x$
               \pause
-        \item Terms: atoms + address arithmetic + dereferencing
+        \item Terms $t$: atoms + address arithmetic + dereferencing
         \[
-            t\,{::=}\,A \mid \&x \mid *(z+t)
+            A \mid \&x \mid *(z+t)
         \]
         \pause
         \item $x$ abbreviation for $*(0 + \&x)$ and $*t$ for $*(0+t)$
-
     \end{itemize}
 \end{frame}
 
@@ -79,12 +77,12 @@ if(x != 64 + start){
               t_1\neq z+t_2
           \]
           \pause
-
     \item Block disequalities
           \[
               bl(t_1) \neq bl(t_2)
           \]
 \end{itemize}
+\pause
 \item Partial order: semantic implication:
               \[
                   \Psi \rightarrow \Psi' \quad\Rightarrow\quad  \Psi \leq \Psi'
@@ -168,6 +166,26 @@ if(x != 64 + start){
 
 \end{frame}
 
+\begin{frame}[fragile,containsverbatim]{Block Disequalities}
+    \begin{itemize}
+        \item For all variables $x$ and $y$:
+              \[
+                  bl(\&x) \neq bl(\&y)
+              \]
+        \pause
+        \item
+              \begin{minted}{C}
+int *x = malloc();
+int *y = malloc();
+\end{minted}
+
+              \[
+                  bl(x) \neq bl(y)
+              \]
+
+    \end{itemize}
+\end{frame}
+
 \begin{frame}[fragile,containsverbatim]{Quantitative Disequalities}
     \begin{itemize}
         \item Deriving from block disequalities:
@@ -225,7 +243,7 @@ if(x != 64 + start){
     \end{itemize}
 \end{frame}
 
-\begin{frame}{Join of two QFAs $M_1 \join M_2$:}
+\begin{frame}{Join of two QFAs $M_1 \join M_2$}
     \begin{itemize}
         \item Add terms to $M_1$ and $M_2$ to bring them to the same set of terms
         \pause
@@ -251,7 +269,7 @@ if(x != 64 + start){
         \begin{tikzpicture}[shorten >=1pt, node distance=3cm, on grid, auto, state/.style={rectangle, rounded corners, draw, inner sep=5pt, align=center}]
 
             \node[state] (Q1) {$\begin{array}{c}A = B+1\\ = C + 2\end{array}$};
-            \node[above=1cm of Q1] (s1) {$s_1$};
+            %\node[above=1cm of Q1] (s1) {$s_1$};
             \node[left=2cm of Q1] (m1) {$\boldsymbol{M_1}$};
 
 
@@ -263,7 +281,7 @@ if(x != 64 + start){
         \begin{tikzpicture}[shorten >=1pt, node distance=3cm, on grid, auto, state/.style={rectangle, rounded corners, draw, inner sep=5pt, align=center}]
 
             \node[state] (Q1) {$\begin{array}{c}A = B+5\\ = C + 6\end{array}$};
-            \node[above=1cm of Q1] (s1) {$v_1$};
+            %\node[above=1cm of Q1] (s1) {$v_1$};
             \node[left=2cm of Q1] (m1) {$\boldsymbol{M_2}$};
 
         \end{tikzpicture}
@@ -271,7 +289,8 @@ if(x != 64 + start){
     \begin{tikzpicture}[overlay]
         \draw[->, thick] (0, 0) -- (1, 0);
     \end{tikzpicture}
-    \hfill%
+    \hfill
+    \pause
     \begin{minipage}{0.4\textwidth}
 
         \begin{tikzpicture}[shorten >=1pt, node distance=1.5cm, on grid, auto, state/.style={rectangle, rounded corners, draw, inner sep=5pt, align=center, minimum size=0.5cm}]
@@ -280,8 +299,8 @@ if(x != 64 + start){
             \node[state, below= 1.5cm of Q1] (Q2) {$B = C + 1$};
             \node[below right=0.6cm and 2.1cm of Q1] (m1) {$\boldsymbol{M_1 \join M_2}$};
 
-            \node[above=0.5cm of Q1] (s1) {$\angl{s_1,v_1, 0}$};
-            \node[above=0.5cm of Q2] (s1) {$\angl{s_1,v_1, 4}$};
+            %\node[above=0.5cm of Q1] (s1) {$\angl{s_1,v_1, 0}$};
+            %\node[above=0.5cm of Q2] (s1) {$\angl{s_1,v_1, 4}$};
 
         \end{tikzpicture}
     \end{minipage}
@@ -409,8 +428,8 @@ if(x != 64 + start){
                 ymin=1, ymax=900, % Define the y-axis limits
                 xmode=log, % Logarithmic x-axis
                 ymode=log, % Logarithmic y-axis
-                xlabel={\base}, % X-axis label
-                ylabel={\cpo}, % Y-axis label
+                xlabel={runtime of \base}, % X-axis label
+                ylabel={runtime of \cpo}, % Y-axis label
                 xtick={1,10,100,900}, % X-axis ticks in logarithmic scale
                 ytick={1,10,100,900}, % Y-axis ticks in logarithmic scale
                 xticklabels={0, 10, 100, 900}, % Custom x-axis labels
@@ -419,48 +438,26 @@ if(x != 64 + start){
                 minor tick num=9, % Number of minor ticks between major ticks
             ]
 
-            \addplot[domain=1:900, samples=100, thick, TUMBlue!60] {x};
+            \addplot[domain=1:900, samples=100, thick, black!60] {x};
 
-        \addplot[domain=1:900, samples=100, TUMBlue!60] {2.35*x};
+        \addplot[domain=1:900, samples=100, black!60] {2.35*x};
 
-        \addplot[domain=1:900, samples=100, TUMBlue!60] {0.43*x};
+        \addplot[domain=1:900, samples=100, black!60] {0.43*x};
 
         \end{axis}
 
     \end{tikzpicture}
 \end{frame}
 
-\begin{frame}{Related Work}
-    \begin{itemize}
-        \item non-relational pointer analysis
-        \[
-        p \mapsto \{ \&malloc_1, \&y \}
-        \]
-        \begin{itemize}
-            \item fast flow- and context-insensitive \cite{Steensgaard,Andersen}
-            \item flow- and context-sensitive (Mopsa~\cite{mopsa},
-            Frama-C~\cite{framac}, \goblint~\cite{goblint})
-        \end{itemize}
-        \pause
-        \item very precise shape analysis, e.g., separation logic~\cite{separationlogic,rivalpapers}
-        \[
-             \{(x + 4 \mapsto 4)\ast ((x\mapsto 42){-\!\!*}P)\}
-        \]
-
-    \end{itemize}
-\end{frame}
-
 \section{Conclusion}
 
 \begin{frame}{Conclusion}
     \begin{itemize}
-        \item \cpo\ can infer equalities and disequalities between two pointer expressions % that were out of reach for other goblint analyses
+        \item \cpo\ can infer equalities and disequalities between pairs of pointer expressions % that were out of reach for other goblint analyses
         \pause
-        \item Implemented meet and (approximation of) join
+        \item Implemented meet, (approximation of) join, widening, narrowing
         \pause
-        \item Widening and narrowing for termination
-        \pause
-        \item Increase precision by cooperating with non-relational analysis
+        \item Scalable, because it is \emph{weakly} relational
         \pause
         \item Future work: track null pointers/undefined pointers
     \end{itemize}
@@ -478,6 +475,20 @@ if(x != 64 + start){
 \end{frame}
 
 \appendix
+
+\begin{frame}{Related Work}
+    \begin{itemize}
+        \item non-relational pointer analysis~\cite{Steensgaard,Andersen}
+        \[
+        p \mapsto \{ \&malloc_1, \&y \}
+        \]
+        \item very precise shape analysis, e.g., separation logic~\cite{separationlogic,rivalpapers}
+        \[
+             \{(x + 4 \mapsto 4)\ast ((x\mapsto 42){-\!\!*}P)\}
+        \]
+
+    \end{itemize}
+\end{frame}
 
  \begin{frame}[allowframebreaks]
      \frametitle{References}
